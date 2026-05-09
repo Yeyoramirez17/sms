@@ -1,0 +1,332 @@
+// SMS-EDUCOL Database Schema - DBML for dbdiagram.io
+// Generated from SMS_EDUCOL_Database_Schema.txt
+
+Table users {
+  id bigint [pk, increment]
+  email varchar(255) [not null, unique]
+  password varchar(255) [not null, note: 'hash bcrypt']
+  role varchar(50) [not null, note: 'superadministrator, administrator, teacher, student']
+  userable_type varchar(255) [not null, note: 'App\\Models\\Student, App\\Models\\Teacher']
+  userable_id bigint [not null]
+  remember_token varchar(100)
+  email_verified_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Almacena credenciales de autenticación de todos los usuarios del sistema'
+}
+
+Table students {
+  id bigint [pk, increment]
+  student_code varchar(50) [not null, unique, note: 'auto-generado']
+  document_type varchar(10) [not null, note: 'TI, CC, CE']
+  document_number varchar(50) [not null, unique]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  date_of_birth date [not null]
+  gender varchar(20) [not null, note: 'M, F, Otro']
+  blood_type varchar(10) [note: 'O+, A-, B+']
+  email varchar(255) [unique]
+  phone varchar(50)
+  address text
+  city varchar(100)
+  state varchar(100) [note: 'departamento en Colombia']
+  photo_path varchar(255)
+  emergency_contact_name varchar(200)
+  emergency_contact_phone varchar(50)
+  emergency_contact_relationship varchar(100)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Información personal y académica de estudiantes'
+}
+
+Table teachers {
+  id bigint [pk, increment]
+  employee_code varchar(50) [not null, unique, note: 'auto-generado']
+  document_type varchar(10) [not null, note: 'CC, CE']
+  document_number varchar(50) [not null, unique]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  date_of_birth date [not null]
+  gender varchar(20) [not null, note: 'M, F, Otro']
+  email varchar(255) [not null, unique]
+  phone varchar(50)
+  specialty varchar(200)
+  professional_title varchar(200)
+  hire_date date
+  photo_path varchar(255)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Información del personal docente'
+}
+
+Table academic_years {
+  id bigint [pk, increment]
+  name varchar(100) [not null, unique, note: '2026, 2026-2027']
+  start_date date [not null]
+  end_date date [not null]
+  is_active boolean [not null, default: false]
+  description text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Años lectivos de la institución'
+}
+
+Table academic_periods {
+  id bigint [pk, increment]
+  academic_year_id bigint [not null]
+  name varchar(100) [not null, note: '1er Bimestre, Primer Trimestre']
+  start_date date [not null]
+  end_date date [not null]
+  order_number integer [not null, note: '1, 2, 3, 4...']
+  is_active boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Períodos académicos (bimestres, trimestres, semestres)'
+}
+
+Table grades {
+  id bigint [pk, increment]
+  name varchar(100) [not null, unique, note: '1° Básico, 6° Grado, 10° Grado']
+  level varchar(50) [not null, note: 'Preescolar, Primaria, Secundaria, Media']
+  order_number integer [not null, unique]
+  description text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Grados o niveles educativos'
+}
+
+Table groups {
+  id bigint [pk, increment]
+  grade_id bigint [not null]
+  academic_year_id bigint [not null]
+  name varchar(50) [not null, note: 'A, B, C, 1, 2']
+  max_students integer [not null, default: 40]
+  teacher_id bigint [note: 'director de grupo, opcional']
+  shift varchar(50) [note: 'Mañana, Tarde, Completa, Nocturna, Fin de semana']
+  classroom varchar(100)
+  description text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Grupos de estudiantes dentro de cada grado'
+}
+
+Table subjects {
+  id bigint [pk, increment]
+  code varchar(50) [not null, unique]
+  name varchar(200) [not null]
+  description text
+  weekly_hours integer
+  color varchar(7) [note: 'color hex para UI, #3B82F6']
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Asignaturas o materias del currículo'
+}
+
+Table grade_subject {
+  id bigint [pk, increment]
+  grade_id bigint [not null]
+  subject_id bigint [not null]
+  is_mandatory boolean [not null, default: true]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Tabla pivote que relaciona grados con asignaturas'
+}
+
+Table assignments {
+  id bigint [pk, increment]
+  teacher_id bigint [not null]
+  subject_id bigint [not null]
+  group_id bigint [not null]
+  academic_year_id bigint [not null]
+  weekly_hours integer
+  notes text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Asignaciones de carga académica (docente-asignatura-grupo)'
+}
+
+Table enrollments {
+  id bigint [pk, increment]
+  student_id bigint [not null]
+  group_id bigint [not null]
+  academic_year_id bigint [not null]
+  enrollment_number varchar(50) [not null, unique, note: 'auto-generado']
+  enrollment_date date [not null]
+  status varchar(50) [not null, default: 'active', note: 'active, withdrawn, transferred']
+  withdrawal_date date
+  withdrawal_reason text
+  notes text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Matrículas de estudiantes en grupos'
+}
+
+Table attendances {
+  id bigint [pk, increment]
+  assignment_id bigint [not null]
+  student_id bigint [not null]
+  date date [not null]
+  status varchar(50) [not null, note: 'present, absent, late, excused']
+  notes text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Registro de asistencia diaria por asignatura'
+}
+
+Table evaluation_types {
+  id bigint [pk, increment]
+  name varchar(200) [not null, note: 'Examen, Tarea, Participación, Proyecto']
+  weight_percentage decimal(5,2) [not null, note: '0.00 a 100.00']
+  subject_id bigint [note: 'si es NULL, aplica a todas las asignaturas']
+  description text
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Tipos de evaluación configurables (examen, tarea, participación, etc.)'
+}
+
+Table grade_records {
+  id bigint [pk, increment]
+  enrollment_id bigint [not null]
+  subject_id bigint [not null]
+  academic_period_id bigint [not null]
+  evaluation_type_id bigint [not null]
+  score decimal(5,2) [not null, note: 'soporta decimales para escala 1.0-5.0']
+  evaluation_date date [not null]
+  teacher_id bigint [not null, note: 'quien registra']
+  notes text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp
+
+  Note: 'Registros individuales de calificaciones'
+}
+
+Table school_info {
+  id bigint [pk, increment]
+  name varchar(255) [not null]
+  logo_path varchar(255)
+  address text
+  city varchar(100)
+  state varchar(100) [note: 'departamento']
+  postal_code varchar(20)
+  phone varchar(50)
+  email varchar(255)
+  website varchar(255)
+  legal_id varchar(50) [note: 'NIT en Colombia']
+  principal_name varchar(200) [note: 'nombre del rector/director']
+  principal_signature_path varchar(255)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Información general de la institución educativa'
+}
+
+Table password_reset_tokens {
+  email varchar(255) [pk]
+  token varchar(255) [not null]
+  created_at timestamp
+
+  Note: 'Tokens para recuperación de contraseña (Laravel estándar)'
+}
+
+Table sessions {
+  id varchar(255) [pk]
+  user_id bigint
+  ip_address varchar(45)
+  user_agent text
+  payload text [not null]
+  last_activity integer [not null]
+
+  Note: 'Almacenamiento de sesiones (Laravel estándar, opcional)'
+}
+
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar(255) [not null, unique]
+  connection text [not null]
+  queue text [not null]
+  payload text [not null]
+  exception text [not null]
+  failed_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Registro de trabajos en cola que fallaron (Laravel estándar)'
+}
+
+Table personal_access_tokens {
+  id bigint [pk, increment]
+  tokenable_type varchar(255) [not null]
+  tokenable_id bigint [not null]
+  name varchar(255) [not null]
+  token varchar(64) [not null, unique]
+  abilities text
+  last_used_at timestamp
+  expires_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Tokens de acceso personal para API (Laravel Sanctum, opcional)'
+}
+
+// Relaciones
+Ref: users.userable_id > students.id
+Ref: users.userable_id > teachers.id
+
+Ref: academic_periods.academic_year_id > academic_years.id
+
+Ref: groups.grade_id > grades.id
+Ref: groups.academic_year_id > academic_years.id
+Ref: groups.teacher_id > teachers.id
+
+Ref: grade_subject.grade_id > grades.id
+Ref: grade_subject.subject_id > subjects.id
+
+Ref: assignments.teacher_id > teachers.id
+Ref: assignments.subject_id > subjects.id
+Ref: assignments.group_id > groups.id
+Ref: assignments.academic_year_id > academic_years.id
+
+Ref: enrollments.student_id > students.id
+Ref: enrollments.group_id > groups.id
+Ref: enrollments.academic_year_id > academic_years.id
+
+Ref: attendances.assignment_id > assignments.id
+Ref: attendances.student_id > students.id
+
+Ref: evaluation_types.subject_id > subjects.id
+
+Ref: grade_records.enrollment_id > enrollments.id
+Ref: grade_records.subject_id > subjects.id
+Ref: grade_records.academic_period_id > academic_periods.id
+Ref: grade_records.evaluation_type_id > evaluation_types.id
+Ref: grade_records.teacher_id > teachers.id
+
+Ref: sessions.user_id > users.id
+
+// Relación polimórfica: tokenable puede apuntar a varios modelos (principalmente users)
+Ref: personal_access_tokens.tokenable_id > users.id

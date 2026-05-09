@@ -1,0 +1,698 @@
+================================================================================
+ESPECIFICACIÓN DEL ESQUEMA DE BASE DE DATOS
+SMS-EDUCOL - Sistema de Gestión Escolar
+Base de Datos: PostgreSQL 16.x
+================================================================================
+
+CONVENCIONES GENERALES:
+- Nomenclatura: snake_case para tablas y columnas
+- Claves primarias: id (tipo BIGSERIAL)
+- Timestamps: created_at, updated_at (TIMESTAMP NOT NULL)
+- Soft deletes: deleted_at (TIMESTAMP NULL) donde aplique
+- Claves foráneas: nombre_tabla_singular_id
+- Índices: Se crean automáticamente en PKs y FKs, adicionales según se especifique
+
+================================================================================
+TABLA: users
+================================================================================
+Propósito: Almacena credenciales de autenticación de todos los usuarios del sistema
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+email               VARCHAR(255)    NOT NULL UNIQUE
+password            VARCHAR(255)    NOT NULL (hash bcrypt)
+role                VARCHAR(50)     NOT NULL (valores: 'superadministrator', 'administrator', 'teacher', 'student')
+userable_type       VARCHAR(255)    NOT NULL (valores: 'App\Models\Student', 'App\Models\Teacher')
+userable_id         BIGINT          NOT NULL
+remember_token      VARCHAR(100)    NULL
+email_verified_at   TIMESTAMP       NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- UNIQUE(email)
+- CHECK(role IN ('superadministrator', 'administrator', 'teacher', 'student'))
+- INDEX en (userable_type, userable_id) para búsquedas polimórficas
+
+Relaciones:
+-----------
+- Relación polimórfica con students y teachers mediante userable_type y userable_id
+
+================================================================================
+TABLA: students
+================================================================================
+Propósito: Información personal y académica de estudiantes
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+student_code        VARCHAR(50)     NOT NULL UNIQUE (auto-generado)
+document_type       VARCHAR(10)     NOT NULL (valores: 'TI', 'CC', 'CE')
+document_number     VARCHAR(50)     NOT NULL UNIQUE
+first_name          VARCHAR(100)    NOT NULL
+last_name           VARCHAR(100)    NOT NULL
+date_of_birth       DATE            NOT NULL
+gender              VARCHAR(20)     NOT NULL (valores: 'M', 'F', 'Otro')
+blood_type          VARCHAR(10)     NULL (ej: 'O+', 'A-', 'B+')
+email               VARCHAR(255)    NULL UNIQUE
+phone               VARCHAR(50)     NULL
+address             TEXT            NULL
+city                VARCHAR(100)    NULL
+state               VARCHAR(100)    NULL (departamento en Colombia)
+photo_path          VARCHAR(255)    NULL
+emergency_contact_name      VARCHAR(200)    NULL
+emergency_contact_phone     VARCHAR(50)     NULL
+emergency_contact_relationship  VARCHAR(100)    NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- UNIQUE(document_number)
+- UNIQUE(student_code)
+- UNIQUE(email) cuando no es NULL
+- CHECK(document_type IN ('TI', 'CC', 'CE'))
+- CHECK(gender IN ('M', 'F', 'Otro'))
+- INDEX en student_code para búsquedas rápidas
+- INDEX en document_number para búsquedas rápidas
+- INDEX compuesto en (first_name, last_name) para búsquedas por nombre
+
+Relaciones:
+-----------
+- Relación polimórfica inversa con users (one-to-one)
+- Tiene muchos enrollments (one-to-many)
+- Tiene muchos attendances (one-to-many)
+
+================================================================================
+TABLA: teachers
+================================================================================
+Propósito: Información del personal docente
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+employee_code       VARCHAR(50)     NOT NULL UNIQUE (auto-generado)
+document_type       VARCHAR(10)     NOT NULL (valores: 'CC', 'CE')
+document_number     VARCHAR(50)     NOT NULL UNIQUE
+first_name          VARCHAR(100)    NOT NULL
+last_name           VARCHAR(100)    NOT NULL
+date_of_birth       DATE            NOT NULL
+gender              VARCHAR(20)     NOT NULL (valores: 'M', 'F', 'Otro')
+email               VARCHAR(255)    NOT NULL UNIQUE
+phone               VARCHAR(50)     NULL
+specialty           VARCHAR(200)    NULL
+professional_title  VARCHAR(200)    NULL
+hire_date           DATE            NULL
+photo_path          VARCHAR(255)    NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- UNIQUE(document_number)
+- UNIQUE(employee_code)
+- UNIQUE(email)
+- CHECK(document_type IN ('CC', 'CE'))
+- CHECK(gender IN ('M', 'F', 'Otro'))
+- INDEX en employee_code para búsquedas rápidas
+- INDEX en document_number para búsquedas rápidas
+- INDEX compuesto en (first_name, last_name)
+
+Relaciones:
+-----------
+- Relación polimórfica inversa con users (one-to-one)
+- Tiene muchos assignments (one-to-many)
+- Tiene muchos groups como director de grupo (one-to-many)
+
+================================================================================
+TABLA: academic_years
+================================================================================
+Propósito: Años lectivos de la institución
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+name                VARCHAR(100)    NOT NULL UNIQUE (ej: '2026', '2026-2027')
+start_date          DATE            NOT NULL
+end_date            DATE            NOT NULL
+is_active           BOOLEAN         NOT NULL DEFAULT FALSE
+description         TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- UNIQUE(name)
+- CHECK(end_date > start_date)
+- Solo puede haber un registro con is_active = TRUE (implementar mediante trigger o lógica de aplicación)
+- INDEX en is_active para búsquedas del año activo
+
+Relaciones:
+-----------
+- Tiene muchos academic_periods (one-to-many)
+- Tiene muchos groups (one-to-many)
+- Tiene muchos enrollments (one-to-many)
+- Tiene muchos assignments (one-to-many)
+
+================================================================================
+TABLA: academic_periods
+================================================================================
+Propósito: Períodos académicos (bimestres, trimestres, semestres)
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+academic_year_id    BIGINT          NOT NULL
+name                VARCHAR(100)    NOT NULL (ej: '1er Bimestre', 'Primer Trimestre')
+start_date          DATE            NOT NULL
+end_date            DATE            NOT NULL
+order_number        INTEGER         NOT NULL (1, 2, 3, 4...)
+is_active           BOOLEAN         NOT NULL DEFAULT FALSE
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE
+- CHECK(end_date > start_date)
+- CHECK(order_number > 0)
+- UNIQUE(academic_year_id, order_number)
+- Las fechas deben estar dentro del rango del año lectivo
+- INDEX en academic_year_id
+- INDEX en order_number
+
+Relaciones:
+-----------
+- Pertenece a academic_year (many-to-one)
+- Tiene muchos grade_records (one-to-many)
+
+================================================================================
+TABLA: grades
+================================================================================
+Propósito: Grados o niveles educativos
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+name                VARCHAR(100)    NOT NULL UNIQUE (ej: '1° Básico', '6° Grado', '10° Grado')
+level               VARCHAR(50)     NOT NULL (valores: 'Preescolar', 'Primaria', 'Secundaria', 'Media')
+order_number        INTEGER         NOT NULL UNIQUE
+description         TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- UNIQUE(name)
+- UNIQUE(order_number)
+- CHECK(level IN ('Preescolar', 'Primaria', 'Secundaria', 'Media'))
+- CHECK(order_number > 0)
+- INDEX en order_number para ordenamiento
+
+Relaciones:
+-----------
+- Tiene muchos groups (one-to-many)
+- Tiene muchos grade_subject (many-to-many con subjects)
+
+================================================================================
+TABLA: groups
+================================================================================
+Propósito: Grupos de estudiantes dentro de cada grado
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+grade_id            BIGINT          NOT NULL
+academic_year_id    BIGINT          NOT NULL
+name                VARCHAR(50)     NOT NULL (ej: 'A', 'B', 'C', '1', '2')
+max_students        INTEGER         NOT NULL DEFAULT 40
+teacher_id          BIGINT          NULL (director de grupo, opcional)
+shift               VARCHAR(50)     NULL (valores: 'Mañana', 'Tarde', 'Completa', 'Nocturna', 'Fin de semana')
+classroom           VARCHAR(100)    NULL
+description         TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(grade_id) REFERENCES grades(id) ON DELETE RESTRICT
+- FOREIGN KEY(academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE
+- FOREIGN KEY(teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
+- UNIQUE(grade_id, academic_year_id, name)
+- CHECK(max_students > 0)
+- CHECK(shift IN ('Mañana', 'Tarde', 'Completa', 'Nocturna', 'Fin de semana'))
+- INDEX en grade_id
+- INDEX en academic_year_id
+- INDEX en teacher_id
+
+Relaciones:
+-----------
+- Pertenece a grade (many-to-one)
+- Pertenece a academic_year (many-to-one)
+- Pertenece a teacher como director (many-to-one, opcional)
+- Tiene muchos enrollments (one-to-many)
+- Tiene muchos assignments (one-to-many)
+
+================================================================================
+TABLA: subjects
+================================================================================
+Propósito: Asignaturas o materias del currículo
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+code                VARCHAR(50)     NOT NULL UNIQUE
+name                VARCHAR(200)    NOT NULL
+description         TEXT            NULL
+weekly_hours        INTEGER         NULL
+color               VARCHAR(7)      NULL (color hex para UI, ej: '#3B82F6')
+is_active           BOOLEAN         NOT NULL DEFAULT TRUE
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- UNIQUE(code)
+- CHECK(weekly_hours > 0) cuando no es NULL
+- INDEX en code para búsquedas rápidas
+- INDEX en is_active
+
+Relaciones:
+-----------
+- Tiene muchos grade_subject (many-to-many con grades)
+- Tiene muchos assignments (one-to-many)
+- Tiene muchos evaluation_types (one-to-many, opcional)
+- Tiene muchos grade_records (one-to-many)
+
+================================================================================
+TABLA: grade_subject
+================================================================================
+Propósito: Tabla pivote que relaciona grados con asignaturas
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+grade_id            BIGINT          NOT NULL
+subject_id          BIGINT          NOT NULL
+is_mandatory        BOOLEAN         NOT NULL DEFAULT TRUE
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(grade_id) REFERENCES grades(id) ON DELETE CASCADE
+- FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+- UNIQUE(grade_id, subject_id)
+- INDEX en grade_id
+- INDEX en subject_id
+
+Relaciones:
+-----------
+- Pertenece a grade (many-to-one)
+- Pertenece a subject (many-to-one)
+
+================================================================================
+TABLA: assignments
+================================================================================
+Propósito: Asignaciones de carga académica (docente-asignatura-grupo)
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+teacher_id          BIGINT          NOT NULL
+subject_id          BIGINT          NOT NULL
+group_id            BIGINT          NOT NULL
+academic_year_id    BIGINT          NOT NULL
+weekly_hours        INTEGER         NULL
+notes               TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(teacher_id) REFERENCES teachers(id) ON DELETE RESTRICT
+- FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE RESTRICT
+- FOREIGN KEY(group_id) REFERENCES groups(id) ON DELETE CASCADE
+- FOREIGN KEY(academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE
+- UNIQUE(subject_id, group_id, academic_year_id) - Una asignatura-grupo solo puede tener un docente
+- CHECK(weekly_hours > 0) cuando no es NULL
+- INDEX en teacher_id
+- INDEX en subject_id
+- INDEX en group_id
+- INDEX en academic_year_id
+- INDEX compuesto en (teacher_id, academic_year_id) para consultas de carga del docente
+
+Relaciones:
+-----------
+- Pertenece a teacher (many-to-one)
+- Pertenece a subject (many-to-one)
+- Pertenece a group (many-to-one)
+- Pertenece a academic_year (many-to-one)
+- Tiene muchos attendances (one-to-many)
+
+================================================================================
+TABLA: enrollments
+================================================================================
+Propósito: Matrículas de estudiantes en grupos
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+student_id          BIGINT          NOT NULL
+group_id            BIGINT          NOT NULL
+academic_year_id    BIGINT          NOT NULL
+enrollment_number   VARCHAR(50)     NOT NULL UNIQUE (auto-generado)
+enrollment_date     DATE            NOT NULL
+status              VARCHAR(50)     NOT NULL DEFAULT 'active' (valores: 'active', 'withdrawn', 'transferred')
+withdrawal_date     DATE            NULL
+withdrawal_reason   TEXT            NULL
+notes               TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE RESTRICT
+- FOREIGN KEY(group_id) REFERENCES groups(id) ON DELETE RESTRICT
+- FOREIGN KEY(academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE
+- UNIQUE(enrollment_number)
+- UNIQUE(student_id, academic_year_id) - Un estudiante solo puede tener una matrícula activa por año
+- CHECK(status IN ('active', 'withdrawn', 'transferred'))
+- CHECK(withdrawal_date IS NULL OR withdrawal_date >= enrollment_date)
+- INDEX en student_id
+- INDEX en group_id
+- INDEX en academic_year_id
+- INDEX en status
+- INDEX compuesto en (academic_year_id, status) para consultas de matriculados activos
+
+Relaciones:
+-----------
+- Pertenece a student (many-to-one)
+- Pertenece a group (many-to-one)
+- Pertenece a academic_year (many-to-one)
+- Tiene muchos grade_records (one-to-many)
+
+Notas:
+------
+Validar en lógica de aplicación que al crear matrícula, el grupo no exceda max_students
+
+================================================================================
+TABLA: attendances
+================================================================================
+Propósito: Registro de asistencia diaria por asignatura
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+assignment_id       BIGINT          NOT NULL
+student_id          BIGINT          NOT NULL
+date                DATE            NOT NULL
+status              VARCHAR(50)     NOT NULL (valores: 'present', 'absent', 'late', 'excused')
+notes               TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE CASCADE
+- FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE
+- UNIQUE(assignment_id, student_id, date) - Un registro de asistencia por estudiante/asignatura/fecha
+- CHECK(status IN ('present', 'absent', 'late', 'excused'))
+- CHECK(date <= CURRENT_DATE) - No se puede registrar asistencia futura
+- INDEX en assignment_id
+- INDEX en student_id
+- INDEX en date
+- INDEX compuesto en (assignment_id, date) para consultas de asistencia del día
+- INDEX compuesto en (student_id, date) para historial del estudiante
+
+Relaciones:
+-----------
+- Pertenece a assignment (many-to-one)
+- Pertenece a student (many-to-one)
+
+================================================================================
+TABLA: evaluation_types
+================================================================================
+Propósito: Tipos de evaluación configurables (examen, tarea, participación, etc.)
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+name                VARCHAR(200)    NOT NULL (ej: 'Examen', 'Tarea', 'Participación', 'Proyecto')
+weight_percentage   DECIMAL(5,2)    NOT NULL (0.00 a 100.00)
+subject_id          BIGINT          NULL (si es NULL, aplica a todas las asignaturas)
+description         TEXT            NULL
+is_active           BOOLEAN         NOT NULL DEFAULT TRUE
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+- CHECK(weight_percentage >= 0 AND weight_percentage <= 100)
+- INDEX en subject_id
+- INDEX en is_active
+
+Relaciones:
+-----------
+- Pertenece a subject (many-to-one, opcional)
+- Tiene muchos grade_records (one-to-many)
+
+Notas:
+------
+Validar en lógica de aplicación que la suma de weight_percentage por asignatura = 100
+
+================================================================================
+TABLA: grade_records
+================================================================================
+Propósito: Registros individuales de calificaciones
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+enrollment_id       BIGINT          NOT NULL
+subject_id          BIGINT          NOT NULL
+academic_period_id  BIGINT          NOT NULL
+evaluation_type_id  BIGINT          NOT NULL
+score               DECIMAL(5,2)    NOT NULL (soporta decimales para escala 1.0-5.0)
+evaluation_date     DATE            NOT NULL
+teacher_id          BIGINT          NOT NULL (quien registra)
+notes               TEXT            NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+deleted_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- FOREIGN KEY(enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
+- FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE RESTRICT
+- FOREIGN KEY(academic_period_id) REFERENCES academic_periods(id) ON DELETE RESTRICT
+- FOREIGN KEY(evaluation_type_id) REFERENCES evaluation_types(id) ON DELETE RESTRICT
+- FOREIGN KEY(teacher_id) REFERENCES teachers(id) ON DELETE RESTRICT
+- CHECK(score >= 0 AND score <= 100) - Ajustar según sistema de calificación institucional
+- INDEX en enrollment_id
+- INDEX en subject_id
+- INDEX en academic_period_id
+- INDEX en evaluation_type_id
+- INDEX compuesto en (enrollment_id, subject_id, academic_period_id) para consultas de boletines
+
+Relaciones:
+-----------
+- Pertenece a enrollment (many-to-one)
+- Pertenece a subject (many-to-one)
+- Pertenece a academic_period (many-to-one)
+- Pertenece a evaluation_type (many-to-one)
+- Pertenece a teacher (many-to-one)
+
+Notas:
+------
+Para cálculo de promedios:
+- Promedio por asignatura/período: AVG de scores ponderado por weight_percentage
+- Promedio general del período: AVG de promedios de todas las asignaturas
+- Promedio final anual: AVG de promedios de todos los períodos
+
+================================================================================
+TABLA: school_info
+================================================================================
+Propósito: Información general de la institución educativa
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+name                VARCHAR(255)    NOT NULL
+logo_path           VARCHAR(255)    NULL
+address             TEXT            NULL
+city                VARCHAR(100)    NULL
+state               VARCHAR(100)    NULL (departamento)
+postal_code         VARCHAR(20)     NULL
+phone               VARCHAR(50)     NULL
+email               VARCHAR(255)    NULL
+website             VARCHAR(255)    NULL
+legal_id            VARCHAR(50)     NULL (NIT en Colombia)
+principal_name      VARCHAR(200)    NULL (nombre del rector/director)
+principal_signature_path VARCHAR(255) NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+
+Restricciones:
+--------------
+- Solo debe existir un único registro (implementar mediante trigger o lógica de aplicación)
+
+Notas:
+------
+Esta tabla contiene un único registro con la información institucional
+
+================================================================================
+TABLA: password_reset_tokens (Laravel estándar)
+================================================================================
+Propósito: Tokens para recuperación de contraseña
+
+Columnas:
+---------
+email               VARCHAR(255)    PRIMARY KEY
+token               VARCHAR(255)    NOT NULL
+created_at          TIMESTAMP       NULL
+
+Restricciones:
+--------------
+- INDEX en token
+
+================================================================================
+TABLA: sessions (Laravel estándar, opcional según configuración)
+================================================================================
+Propósito: Almacenamiento de sesiones (si se usa driver 'database')
+
+Columnas:
+---------
+id                  VARCHAR(255)    PRIMARY KEY
+user_id             BIGINT          NULL
+ip_address          VARCHAR(45)     NULL
+user_agent          TEXT            NULL
+payload             TEXT            NOT NULL
+last_activity       INTEGER         NOT NULL
+
+Restricciones:
+--------------
+- INDEX en user_id
+- INDEX en last_activity
+
+================================================================================
+TABLA: failed_jobs (Laravel estándar)
+================================================================================
+Propósito: Registro de trabajos en cola que fallaron
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+uuid                VARCHAR(255)    NOT NULL UNIQUE
+connection          TEXT            NOT NULL
+queue               TEXT            NOT NULL
+payload             TEXT            NOT NULL
+exception           TEXT            NOT NULL
+failed_at           TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+Restricciones:
+--------------
+- UNIQUE(uuid)
+
+================================================================================
+TABLA: personal_access_tokens (Laravel Sanctum, opcional)
+================================================================================
+Propósito: Tokens de acceso personal para API
+
+Columnas:
+---------
+id                  BIGSERIAL       PRIMARY KEY
+tokenable_type      VARCHAR(255)    NOT NULL
+tokenable_id        BIGINT          NOT NULL
+name                VARCHAR(255)    NOT NULL
+token               VARCHAR(64)     NOT NULL UNIQUE
+abilities           TEXT            NULL
+last_used_at        TIMESTAMP       NULL
+expires_at          TIMESTAMP       NULL
+created_at          TIMESTAMP       NOT NULL
+updated_at          TIMESTAMP       NOT NULL
+
+Restricciones:
+--------------
+- UNIQUE(token)
+- INDEX compuesto en (tokenable_type, tokenable_id)
+
+================================================================================
+CONSIDERACIONES ADICIONALES
+================================================================================
+
+AUDITORÍA (Opcional pero recomendado):
+---------------------------------------
+Tabla: audits
+- Registrar acciones críticas (CREATE, UPDATE, DELETE) en:
+  * students
+  * teachers
+  * enrollments
+  * grade_records
+  * users
+
+Columnas sugeridas:
+- id (BIGSERIAL PRIMARY KEY)
+- user_id (BIGINT) - quien realizó la acción
+- auditable_type (VARCHAR) - tipo de modelo afectado
+- auditable_id (BIGINT) - ID del registro afectado
+- event (VARCHAR) - tipo de evento (created, updated, deleted)
+- old_values (JSONB) - valores anteriores
+- new_values (JSONB) - valores nuevos
+- ip_address (VARCHAR)
+- user_agent (TEXT)
+- created_at (TIMESTAMP)
+
+SECUENCIAS PARA CÓDIGOS AUTO-GENERADOS:
+----------------------------------------
+- student_code: SEQ_STUDENT_CODE (formato: EST-YYYY-NNNN)
+- employee_code: SEQ_EMPLOYEE_CODE (formato: DOC-YYYY-NNNN)
+- enrollment_number: SEQ_ENROLLMENT (formato: MAT-YYYY-NNNNNN)
+
+Implementar mediante funciones/triggers de PostgreSQL o lógica de aplicación
+
+VISTAS ÚTILES (Opcional):
+--------------------------
+1. view_active_enrollments: Matrículas activas con datos de estudiante y grupo
+2. view_student_grades_summary: Resumen de calificaciones por estudiante
+3. view_teacher_schedule: Horario de carga académica por docente
+4. view_attendance_statistics: Estadísticas de asistencia por estudiante/grupo
+
+PARTICIONAMIENTO (Para instituciones grandes):
+-----------------------------------------------
+Considerar particionar las tablas:
+- attendances: Por año (date)
+- grade_records: Por año lectivo (academic_year_id)
+
+POLÍTICAS DE RESPALDO:
+----------------------
+- Respaldo completo: Diario
+- Respaldo incremental: Cada 6 horas
+- Retención: Mínimo 30 días
+
+ÍNDICES FULL-TEXT (PostgreSQL):
+--------------------------------
+Para búsquedas de texto completo en:
+- students(first_name, last_name)
+- teachers(first_name, last_name)
+- subjects(name, description)
+
+Ejemplo: CREATE INDEX idx_students_fulltext ON students USING gin(to_tsvector('spanish', first_name || ' ' || last_name));
+
+================================================================================
+FIN DE ESPECIFICACIÓN
+================================================================================
