@@ -6,17 +6,19 @@ namespace Src\SMS\Shared\Domain\ValueObjects;
 
 use InvalidArgumentException;
 
-class Email
+final class Email
 {
-    private ?string $value;
+    private string $value;
 
     public function __construct(string $value)
     {
-        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+        $email = $this->normalize($value);
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException('Invalid email format');
         }
 
-        $this->value = $this->normalize($value);
+        $this->value = $email;
     }
 
     public function value(): string
@@ -37,5 +39,10 @@ class Email
     public function normalize(string $value): string
     {
         return strtolower(trim($value));
+    }
+
+    public function __toString(): string
+    {
+        return $this->value;
     }
 }

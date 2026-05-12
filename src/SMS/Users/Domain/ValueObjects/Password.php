@@ -6,6 +6,8 @@ namespace Src\SMS\Users\Domain\ValueObjects;
 
 use InvalidArgumentException;
 
+use function strlen;
+
 final class Password
 {
     private string $hash;
@@ -36,16 +38,32 @@ final class Password
         return new self($hash);
     }
 
+    public static function fromExistingHash(string $hash): self
+    {
+        return new self($hash);
+    }
+
     public function verify(string $passwordPlainText): bool
     {
         return password_verify($passwordPlainText, $this->hash);
     }
 
+    /**
+     * Check if this password is equal to another password (based on hash).
+     *
+     * @param Password $other
+     * @return bool
+     */
     public function equals(Password $other): bool
     {
         return $this->hash === $other->hash();
     }
 
+    /**
+     * Get the hashed password value.
+     *
+     * @return string
+     */
     public function hash(): string
     {
         return $this->hash;
@@ -56,19 +74,18 @@ final class Password
         if (strlen($passPlainText) < 8) {
             throw new InvalidArgumentException("Password must be at least 8 characters");
         }
-            
-        if(!preg_match('/[0-9]/', $passPlainText)) {
+
+        if (!preg_match('/[0-9]/', $passPlainText)) {
             throw new InvalidArgumentException("Password must contain at least one number.");
         }
 
         if (!preg_match('/[A-Z]/', $passPlainText) || !preg_match('/[a-z]/', $passPlainText)) {
-        throw new InvalidArgumentException("Password must contain uppercase and lowercase letters");
+            throw new InvalidArgumentException("Password must contain uppercase and lowercase letters");
+        }
     }
 
     public function __toString(): string
     {
         return substr($this->hash, 0, 10) . '***';
     }
-
-    
 }

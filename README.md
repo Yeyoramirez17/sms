@@ -1,58 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SMS-EDUCOL — Sistema de Gestión Académica
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**SMS-EDUCOL** (Sistema de Manejo Escolar Educativo de Colombia) es una plataforma integral diseñada para automatizar y optimizar la gestión administrativa y académica de instituciones educativas de nivel básico y medio.
 
-## About Laravel
+Este proyecto ha sido desarrollado como una **demostración avanzada de ingeniería de software**, aplicando patrones arquitectónicos modernos y estándares de alta calidad para resolver problemas complejos de lógica de negocio en el sector educativo.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Capacidades Técnicas y Arquitectura
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+El proyecto destaca por ir más allá del uso convencional del framework, implementando una estructura robusta preparada para el crecimiento y la mantenibilidad:
 
-## Learning Laravel
+- **Arquitectura Hexagonal (Ports & Adapters):** El dominio de negocio es totalmente independiente del framework (Laravel) y de la infraestructura (Base de Datos), facilitando tests unitarios puros y cambios tecnológicos sin riesgos.
+- **Domain-Driven Design (DDD):** Uso de tácticas de DDD como *Entities*, *Value Objects*, *Aggregates* y *Domain Events* para modelar fielmente las reglas del sistema educativo colombiano.
+- **Estructura Modular:** Organizado en módulos de dominio autónomos (`Users`, `Students`, `Academic`, `Grades`, etc.), permitiendo una escalabilidad modular y facilitando la transición a microservicios si fuera necesario.
+- **Testing Riguroso:** Implementación de pirámide de pruebas con **Pest PHP**, cubriendo lógica de dominio (Unit), persistencia (Integration) y flujos críticos de usuario (Feature).
+- **ADRs (Architectural Decision Records):** Todas las decisiones técnicas críticas están documentadas, justificando el "por qué" detrás de cada elección tecnológica.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ✨ Características Principales
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 🏫 Gestión Académica Core
+- **Configuración Multianual:** Gestión de años lectivos, períodos académicos (bimestres/trimestres) y jornadas.
+- **Estructura Educativa:** Definición jerárquica de Grados, Grupos y Asignaturas.
+- **Carga Académica:** Asignación dinámica de docentes a asignaturas y grupos.
 
-## Agentic Development
+### 👥 Gestión de Comunidad
+- **Estudiantes y Docentes:** Perfiles completos con seguimiento de historial, documentos legales (TI, CC, CE) y datos de contacto.
+- **Matrículas Inteligentes:** Control de cupos en tiempo real, procesos de retiro y traslado entre grupos.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 📊 Seguimiento y Evaluación
+- **Control de Asistencia:** Registro diario por asignatura con estados (presente, ausente, tardanza, justificado).
+- **Sistema de Calificaciones Flexible:** Escalas configurables (0-100 o 1.0-5.0), pesos porcentuales por tipo de evaluación y cálculo automático de promedios.
+- **Reportes Profesionales:** Generación de boletines de calificaciones en PDF y exportación de listados administrativos a Excel.
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
+## 🛠️ Stack Tecnológico
+
+- **Backend:** PHP 8.4 + Laravel 13.x
+- **Arquitectura:** Hexagonal + DDD
+- **Base de Datos:** PostgreSQL 16+ (Relaciones complejas, índices GIN para búsquedas)
+- **Caché/Colas:** Redis 7.x
+- **Frontend:** Tailwind CSS v4 + Alpine.js
+- **Testing:** Pest PHP 4.x
+- **Herramientas:** Laravel Boost para desarrollo asistido por IA.
+
+---
+
+## 📂 Estructura del Proyecto
+
+El código fuente sigue el estándar definido en el Documento de Arquitectura (SAD):
+
+```text
+src/SMS/
+├── Shared/             # Código compartido entre dominios
+└── [Modulo]/           # Ejemplo: Users, Students, Grades
+    ├── Domain/         # Entidades, Value Objects, Puertos (Interfaces)
+    ├── Application/    # Casos de Uso, DTOs, Mappers
+    └── Infrastructure/ # Implementación de Repositorios (Eloquent), Controladores, Drivers
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🛠️ Instalación y Configuración
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/tu-usuario/sms-educol.git
+   cd sms-educol
+   ```
 
-## Code of Conduct
+2. **Instalar dependencias:**
+   ```bash
+   composer install
+   npm install
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Configurar el entorno:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Security Vulnerabilities
+4. **Ejecutar migraciones y seeders:**
+   ```bash
+   php artisan migrate --seed
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. **Iniciar el servidor:**
+   ```bash
+   php artisan serve
+   ```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🧪 Ejecución de Pruebas
+
+Para validar la integridad del sistema y las reglas de negocio:
+
+```bash
+php artisan test --compact
+```
+
+---
+
+## 📄 Documentación Detallada
+
+Para más información técnica, consulte la carpeta `/docs`:
+- **[SRS]**: Especificación de Requisitos de Software.
+- **[SAD]**: Documento de Arquitectura de Software.
+- **[Schema]**: Especificación detallada de la base de datos.
