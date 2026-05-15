@@ -14,8 +14,7 @@ final class UserCreatedEvent
         private readonly UserId $userId,
         private readonly Email $email,
         private readonly Role $role,
-    ) {
-    }
+    ) {}
 
     public function getUserId(): UserId
     {
@@ -34,6 +33,6 @@ final class UserCreatedEvent
 
     public function getOccurredOn(): \DateTimeImmutable
     {
-        return new \DateTimeImmutable();
+        return new \DateTimeImmutable;
     }
 }

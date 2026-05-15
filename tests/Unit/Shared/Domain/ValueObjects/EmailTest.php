@@ -103,6 +103,6 @@ final class EmailTest extends TestCase
         $emailString = 'john@example.com';
         $email = new Email($emailString);
 
-        $this->assertEquals($emailString, (string)$email);
+        $this->assertEquals($emailString, (string) $email);
     }
 }

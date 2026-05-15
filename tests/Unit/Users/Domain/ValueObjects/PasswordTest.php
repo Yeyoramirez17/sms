@@ -87,7 +87,7 @@ final class PasswordTest extends TestCase
     public function test_password_equality(): void
     {
         $hash = password_hash('ValidPassword123!', PASSWORD_BCRYPT, ['cost' => 10]);
-        
+
         $password1 = Password::fromHash($hash);
         $password2 = Password::fromHash($hash);
 

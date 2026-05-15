@@ -14,7 +14,7 @@ final class Email
     {
         $email = $this->normalize($value);
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! $this->validate($email)) {
             throw new InvalidArgumentException('Invalid email format');
         }
 
@@ -44,5 +44,10 @@ final class Email
     public function __toString(): string
     {
         return $this->value;
+    }
+
+    private function validate(string $email): bool
+    {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 }

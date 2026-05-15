@@ -16,6 +16,7 @@ use Tests\TestCase;
 final class CreateUserUseCaseTest extends TestCase
 {
     private MockInterface $userRepository;
+
     private CreateUserUseCase $useCase;
 
     protected function setUp(): void
@@ -40,7 +41,7 @@ final class CreateUserUseCaseTest extends TestCase
         $this->userRepository
             ->shouldReceive('existsByEmail')
             ->once()
-            ->with(\Mockery::on(fn(Email $email) => $email->value() === 'john.doe@example.com'))
+            ->with(\Mockery::on(fn (Email $email) => $email->value() === 'john.doe@example.com'))
             ->andReturn(false);
 
         $this->userRepository
