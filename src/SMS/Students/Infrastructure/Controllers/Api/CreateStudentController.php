@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Students\Infrastructure\Controllers;
+namespace Src\SMS\Students\Infrastructure\Controllers\Api;
 
+use App\Http\Requests\Student\CreateStudentRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Src\SMS\Students\Application\DTOs\CreateStudentDTO;
 use Src\SMS\Students\Application\UseCases\CreateStudentUseCase;
 use Src\SMS\Students\Domain\Exceptions\DuplicateDocumentException;
 use Src\SMS\Students\Domain\Exceptions\DuplicateStudentCodeException;
+use Src\SMS\Students\Domain\Exceptions\StudentNotFoundException;
 
 final class CreateStudentController
 {
@@ -17,10 +18,10 @@ final class CreateStudentController
         private CreateStudentUseCase $createStudentUseCase
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(CreateStudentRequest $request): JsonResponse
     {
         try {
-            $dto = CreateStudentDTO::fromArray($request->all());
+            $dto = CreateStudentDTO::fromArray($request->validated());
             $response = $this->createStudentUseCase->execute($dto);
 
             return response()->json([

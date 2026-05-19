@@ -17,6 +17,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => fake()->uuid(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -26,6 +27,23 @@ class UserFactory extends Factory
             'userable_id' => null,
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Link the user to a student profile
+     */
+    public function asStudent(): static
+    {
+        return $this->state(function (array $attributes) {
+            $student = \App\Models\Student::factory()->create();
+
+            return [
+                'role' => 'student',
+                'email' => $student->email,
+                'userable_type' => \App\Models\Student::class,
+                'userable_id' => $student->id,
+            ];
+        });
     }
 
     public function unverified(): static

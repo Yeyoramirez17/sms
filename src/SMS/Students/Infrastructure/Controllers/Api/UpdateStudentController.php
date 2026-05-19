@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Students\Infrastructure\Controllers;
+namespace Src\SMS\Students\Infrastructure\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,7 +10,7 @@ use Src\SMS\Students\Application\DTOs\UpdateStudentDTO;
 use Src\SMS\Students\Application\UseCases\UpdateStudentUseCase;
 use Src\SMS\Students\Domain\Exceptions\StudentNotFoundException;
 
-final class UpdateSudentController
+final class UpdateStudentController
 {
     public function __construct(
         private UpdateStudentUseCase $updateStudentUseCase

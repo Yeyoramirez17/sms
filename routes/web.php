@@ -2,14 +2,16 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Students\CreateStudentController;
-use App\Http\Controllers\Students\GetStudentByCriteriaController;
-use App\Http\Controllers\Students\GetStudentByIdController;
-use App\Http\Controllers\Students\UpdateStudentController;
-use App\Http\Controllers\Students\DeleteStudentController;
+use SMS\Users\Infrastructure\Controllers\AuthController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\CreateStudentController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\DeleteStudentController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\EditStudentController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByCriteriaController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByIdController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\UpdateStudentController;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::get('/login', [AuthController::class, 'showForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 });
 
@@ -21,10 +23,12 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/', GetStudentByCriteriaController::class)->name('index');
-        Route::post('/', CreateStudentController::class)->name('store');
+        Route::get('/create', [CreateStudentController::class, 'create'])->name('create');
+        Route::post('/', [CreateStudentController::class, 'store'])->name('store');
         Route::get('/{id}', GetStudentByIdController::class)->name('show');
-        Route::put('/{id}', UpdateStudentController::class)->name('update');
-        Route::delete('/{id}', DeleteStudentController::class)->name('destroy');
+        Route::get('/{id}/edit', EditStudentController::class)->name('edit');
+        Route::put('/{id}', [UpdateStudentController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DeleteStudentController::class, 'destroy'])->name('destroy');
     });
 });
 

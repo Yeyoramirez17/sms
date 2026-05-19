@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Src\SMS\Users\Domain\ValueObjects\Role;
 use Src\SMS\Users\Domain\ValueObjects\UserStatus;
 
 class DatabaseSeeder extends Seeder
@@ -18,13 +17,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory(10)->create();
+        // Create 14 students with linked profiles
+        User::factory(14)->asStudent()->create();
 
-        User::factory()->create([
-            'email'  => 'test@example.com',
+        // Create one specific super admin user for testing (No student profile linked)
+        User::factory()->superAdmin()->create([
+            'email' => 'admin@example.com',
             'password' => Hash::make('secret123'),
-            'role'   => Role::SUPER_ADMIN,
-            'status' => UserStatus::ACTIVE,
+            'status' => 'active',
+        ]);
+
+        User::factory()->asStudent()->create([
+            'email' => 'student@example.com',
+            'password' => Hash::make('secret123'),
+            'status' => UserStatus::ACTIVE->value,
         ]);
     }
 }

@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 final class AuthenticateUserUseCaseTest extends TestCase
 {
-    /** @var UserRepositoryInterface $userRepository */
+    /** @var UserRepositoryInterface */
     private $userRepository;
 
     private AuthenticateUserUseCase $useCase;
@@ -30,6 +30,7 @@ final class AuthenticateUserUseCaseTest extends TestCase
         $this->useCase = new AuthenticateUserUseCase($this->userRepository);
     }
 
+    /** @test */
     public function test_authenticate_with_valid_credentials(): void
     {
         $dto = new LoginRequestDTO(

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Students\Infrastructure\Controllers;
+namespace Src\SMS\Students\Infrastructure\Controllers\Api;
 
 use Illuminate\Http\Request;
 use Src\SMS\Students\Application\DTOs\SearchStudentsDTO;

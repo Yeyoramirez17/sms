@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Students\Infrastructure\Controllers;
+namespace Src\SMS\Students\Infrastructure\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Src\SMS\Students\Application\UseCases\DeleteStudentUseCase;
