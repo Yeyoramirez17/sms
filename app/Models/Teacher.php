@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     "employee_code",
     "document_type",
     "document_number",
-    "first_name",
-    "last_name",
     "date_of_birth",
     "gender",
     "email",
@@ -22,5 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Teacher extends Model
 {
-    //
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

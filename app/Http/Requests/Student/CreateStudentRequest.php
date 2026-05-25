@@ -25,7 +25,7 @@ class CreateStudentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'document_type' => ['required', 'string', 'in:TI,CC,CE'],
+            'document_type'   => ['required', 'string', 'in:TI,CC,CE'],
             'document_number' => ['required', 'string', 'min:6', 'max:15'],
             'first_name'      => ['required', 'string', 'min:2', 'max:50'],
             'last_name'       => ['required', 'string', 'min:2', 'max:50'],
@@ -50,6 +50,7 @@ class CreateStudentRequest extends FormRequest
             'document_type.in'  => 'The document type must be TI, CC, or CE.',
             'birth_date.before' => 'The birth date cannot be in the future.',
             'gender.enum'       => 'The gender must be male, female, or other.',
+            'blood_type.in'     => 'The blood type must be a valid option.',
         ];
     }
 }

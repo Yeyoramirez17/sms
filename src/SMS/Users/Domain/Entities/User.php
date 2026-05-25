@@ -5,31 +5,54 @@ declare(strict_types=1);
 namespace Src\SMS\Users\Domain\Entities;
 
 use Src\SMS\Shared\Domain\ValueObjects\Email;
+use Src\SMS\Shared\Domain\ValueObjects\FullName;
 use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Users\Domain\ValueObjects\Password;
 use Src\SMS\Users\Domain\ValueObjects\Role;
 use Src\SMS\Users\Domain\ValueObjects\UserStatus;
 
+/**
+ * User aggregate root representing a system user.
+ *
+ * This class encapsulates all user-related properties and behaviors,
+ * including password management, role changes, and status updates.
+ *
+ * It also tracks domain events that occur during operations on the user.
+ */
 final class User
 {
     private UserId $userId;
     private Email $email;
+    private FullName $name;
     private Password $password;
     private Role $role;
     private UserStatus $status;
+    private ?\DateTimeImmutable $createdAt;
+    private ?\DateTimeImmutable $updatedAt;
 
     /**
      * @var array<int, object> Domain events that occurred during this operation
      */
     private array $domainEvents = [];
 
-    private function __construct(UserId $id, Email $email, Password $password, Role $role, UserStatus $status)
-    {
-        $this->userId   = $id;
-        $this->email    = $email;
-        $this->password = $password;
-        $this->role     = $role;
-        $this->status   = $status;
+    private function __construct(
+        UserId $id,
+        Email $email,
+        FullName $name,
+        Password $password,
+        Role $role,
+        UserStatus $status,
+        ?\DateTimeImmutable $createdAt = null,
+        ?\DateTimeImmutable $updatedAt = null
+    ) {
+        $this->userId    = $id;
+        $this->email     = $email;
+        $this->name      = $name;
+        $this->password  = $password;
+        $this->role      = $role;
+        $this->status    = $status;
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
     }
 
     // ===== Getters =====
@@ -42,6 +65,11 @@ final class User
     public function getEmail(): Email
     {
         return $this->email;
+    }
+
+    public function getName(): FullName
+    {
+        return $this->name;
     }
 
     public function getPassword(): Password
@@ -59,6 +87,16 @@ final class User
         return $this->status;
     }
 
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
     /**
      * Factory method to create a new User
      *
@@ -67,14 +105,15 @@ final class User
      * @param Role $role
      * @return User
      */
-    public static function create(Email $email, string $plainPassword, Role $role): self
+    public static function create(Email $email, FullName $name, string $plainPassword, Role $role, UserStatus $status): self
     {
         return new self(
             new UserId(),
             $email,
+            $name,
             Password::fromPlainText($plainPassword),
             $role,
-            UserStatus::ACTIVE
+            $status
         );
     }
 
@@ -86,11 +125,21 @@ final class User
      * @param Password $password
      * @param Role $role
      * @param UserStatus $status
+     * @param \DateTimeImmutable $createdAt
+     * @param \DateTimeImmutable|null $updatedAt
      * @return User
      */
-    public static function reconstruct(UserId $userId, Email $email, Password $password, Role $role, UserStatus $status): self
-    {
-        return new self($userId, $email, $password, $role, $status);
+    public static function reconstruct(
+        UserId $userId,
+        Email $email,
+        FullName $name,
+        Password $password,
+        Role $role,
+        UserStatus $status,
+        \DateTimeImmutable $createdAt,
+        ?\DateTimeImmutable $updatedAt = null
+    ): self {
+        return new self($userId, $email, $name, $password, $role, $status, $createdAt, $updatedAt);
     }
 
     /**

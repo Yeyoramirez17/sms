@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\SMS\Students\Application\UseCases;
 
 use Src\SMS\Shared\Domain\ValueObjects\Email;
+use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Students\Application\DTOs\CreateStudentDTO;
 use Src\SMS\Students\Application\DTOs\StudentResponseDTO;
 use Src\SMS\Students\Domain\Entities\Student;
@@ -29,6 +30,7 @@ final readonly class CreateStudentUseCase
 
     public function execute(CreateStudentDTO $dto): StudentResponseDTO
     {
+        $userId   = new UserId($dto->userId);
         $document = new Document($dto->documentType, $dto->documentNumber);
 
         if ($this->studentRepository->existsByDocument($document)) {
@@ -38,8 +40,8 @@ final readonly class CreateStudentUseCase
             );
         }
 
-        $fullName = new FullName($dto->firstName, $dto->lastName);
-        $birthDate = new DateOfBirth($dto->birthDate);
+        $fullName    = new FullName($dto->firstName, $dto->lastName);
+        $birthDate   = new DateOfBirth($dto->birthDate);
         $studentCode = $this->codeGenerator->generate((int) date('Y'));
 
         if ($this->studentRepository->existsByCode($studentCode)) {
@@ -65,6 +67,7 @@ final readonly class CreateStudentUseCase
         $gender = Gender::fromString($dto->gender);
 
         $student = Student::create(
+            userId: $userId,
             document: $document,
             fullName: $fullName,
             birthDate: $birthDate,

@@ -11,9 +11,21 @@ use Src\SMS\Users\Domain\Entities\User;
 interface UserRepositoryInterface
 {
     /**
-     * Persist a new user or update an existing one
+     * Persist a new user entity.
+     *
+     * @param User $user The user entity to save
+     * @return User The saved user.
      */
-    public function save(User $user): void;
+    public function save(User $user): User;
+
+
+    /**
+     * Update an existing user
+     *
+     * @param User $user The user entity with updated data
+     * @return User The updated user entity
+     */
+    public function update(User $user): User;
 
     /**
      * Find a user by their unique identifier

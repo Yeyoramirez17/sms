@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Src\SMS\Students\Domain\Entities;
 
+use App\Models\User;
 use Src\SMS\Shared\Domain\ValueObjects\Email;
+use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Students\Domain\ValueObjects\Attendant;
 use Src\SMS\Students\Domain\ValueObjects\BloodType;
 use Src\SMS\Students\Domain\ValueObjects\DateOfBirth;
@@ -15,9 +17,14 @@ use Src\SMS\Students\Domain\ValueObjects\Gender;
 use Src\SMS\Students\Domain\ValueObjects\StudentCode;
 use Src\SMS\Students\Domain\ValueObjects\StudentId;
 
+
+/**
+ * Represents a student entity in the school management system.
+ */
 final class Student
 {
     private StudentId $id;
+    private UserId $userId;
     private Document $document;
     private FullName $fullName;
     private DateOfBirth $birthDate;
@@ -35,6 +42,7 @@ final class Student
 
     private function __construct(
         StudentId $id,
+        UserId $userId,
         Document $document,
         FullName $fullName,
         DateOfBirth $birthDate,
@@ -49,6 +57,7 @@ final class Student
         ?Attendant $attendant = null
     ) {
         $this->id = $id;
+        $this->userId = $userId;
         $this->document = $document;
         $this->fullName = $fullName;
         $this->birthDate = $birthDate;
@@ -66,6 +75,11 @@ final class Student
     public function getId(): StudentId
     {
         return $this->id;
+    }
+
+    public function getUserId(): UserId
+    {
+        return $this->userId;
     }
 
     public function getDocument(): Document
@@ -131,7 +145,7 @@ final class Student
     /**
      * Creates a new Student entity with the provided information.
      *
-     * @param  StudentId  $id  The unique identifier of the student.
+     * @param  UserId  $userId  The unique identifier referenced from the User entity.
      * @param  Document  $document  The student's document information.
      * @param  FullName  $fullName  The student's full name.
      * @param  DateOfBirth  $birthDate  The student's date of birth.
@@ -148,6 +162,7 @@ final class Student
      * @return self A new instance of the Student entity.
      */
     public static function create(
+        UserId $userId,
         Document $document,
         FullName $fullName,
         DateOfBirth $birthDate,
@@ -163,6 +178,7 @@ final class Student
     ): self {
         $student = new self(
             new StudentId,
+            $userId,
             $document,
             $fullName,
             $birthDate,
@@ -184,6 +200,7 @@ final class Student
      * Reconstructs a Student entity for example from persisted data.
      *
      * @param  StudentId  $id  The unique identifier of the student.
+     * @param  UserId  $userId  The unique identifier of the student.
      * @param  Document  $document  The student's document information.
      * @param  FullName  $fullName  The student's full name.
      * @param  DateOfBirth  $birthDate  The student's date of birth.
@@ -200,6 +217,7 @@ final class Student
      */
     public static function reconstruct(
         StudentId $id,
+        UserId $userId,
         Document $document,
         FullName $fullName,
         DateOfBirth $birthDate,
@@ -215,6 +233,7 @@ final class Student
     ): self {
         return new self(
             $id,
+            $userId,
             $document,
             $fullName,
             $birthDate,
@@ -230,11 +249,23 @@ final class Student
         );
     }
 
+    /**
+     * Calculates the student's age based on their date of birth.
+     *
+     * @return int The calculated age of the student.
+     */
     public function calculateAge(): int
     {
         return $this->birthDate->calculateAge();
     }
 
+    /**
+     * Determines if the student's age falls within the specified range for a given grade level.
+     *
+     * @param int $minAge The minimum age for the grade level.
+     * @param int $maxAge The maximum age for the grade level.
+     * @return bool True if the student's age is appropriate for the grade level, false otherwise.
+     */
     public function isAgeAppropriateForGrade(int $minAge, int $maxAge): bool
     {
         return $this->birthDate->isAgeAppropriate($minAge, $maxAge);

@@ -10,6 +10,7 @@ final readonly class StudentResponseDTO
 {
     public function __construct(
         public string $id,
+        public string $user_id,
         public string $documentType,
         public string $documentNumber,
         public string $firstName,
@@ -29,7 +30,8 @@ final readonly class StudentResponseDTO
         public ?string $attendantRelationship,
         public ?string $attendantPhone,
         public ?string $attendantEmail,
-        public string $createdAt = '',
+        public ?string $createdAt = null,
+        public ?string $updatedAt = null,
     ) {}
 
     public static function fromEntity(Student $student): self
@@ -37,23 +39,24 @@ final readonly class StudentResponseDTO
         $attendant = $student->getAttendant();
 
         return new self(
-            id:             $student->getId()->value(),
-            documentType:   $student->getDocument()->type(),
+            id: $student->getId()->value(),
+            user_id: $student->getUserId()->value(),
+            documentType: $student->getDocument()->type(),
             documentNumber: $student->getDocument()->number(),
-            firstName:      $student->getFullName()->firstName(),
-            lastName:       $student->getFullName()->lastName(),
-            fullName:       $student->getFullName()->value(),
-            birthDate:      $student->getBirthDate()->toString(),
-            age:            $student->calculateAge(),
-            gender:         $student->getGender()->value,
-            bloodType:      $student->getBloodType()?->value(),
-            epsName:        $student->getEps()?->name(),
-            address:        $student->getAddress(),
-            phone:          $student->getPhone(),
-            email:          $student->getEmail()?->value(),
-            studentCode:    $student->getStudentCode()->value(),
-            photoPath:      $student->getPhotoPath(),
-            attendantName:  $attendant?->name(),
+            firstName: $student->getFullName()->firstName(),
+            lastName: $student->getFullName()->lastName(),
+            fullName: $student->getFullName()->value(),
+            birthDate: $student->getBirthDate()->toString(),
+            age: $student->calculateAge(),
+            gender: $student->getGender()->value,
+            bloodType: $student->getBloodType()?->value(),
+            epsName: $student->getEps()?->name(),
+            address: $student->getAddress(),
+            phone: $student->getPhone(),
+            email: $student->getEmail()?->value(),
+            studentCode: $student->getStudentCode()->value(),
+            photoPath: $student->getPhotoPath(),
+            attendantName: $attendant?->name(),
             attendantRelationship: $attendant?->relationship(),
             attendantPhone: $attendant?->phone(),
             attendantEmail: $attendant?->email()?->value(),
@@ -64,6 +67,7 @@ final readonly class StudentResponseDTO
     {
         return [
             'id'              => $this->id,
+            'user_id'         => $this->user_id,
             'document_type'   => $this->documentType,
             'document_number' => $this->documentNumber,
             'first_name'      => $this->firstName,

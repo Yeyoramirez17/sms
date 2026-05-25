@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Src\SMS\Students\Application\UseCases;
 
 use Src\SMS\Students\Application\DTOs\SearchStudentsDTO;
+use Src\SMS\Students\Application\DTOs\StudentPaginatedResponseDTO;
+use Src\SMS\Students\Application\DTOs\StudentResponseDTO;
+use Src\SMS\Students\Domain\Entities\Student;
 use Src\SMS\Students\Domain\Repositories\StudentPaginatedResult;
 use Src\SMS\Students\Domain\Repositories\StudentQueryInterface;
 use Src\SMS\Students\Domain\Repositories\StudentSearchCriteria;
@@ -29,6 +32,9 @@ final readonly class SearchStudentsUseCase
             orderDirection: $dto->orderDirection,
         );
 
-        return $this->studentQuery->searchWithPagination($criteria, $dto->page, $dto->perPage);
+        $result = $this->studentQuery->searchWithPagination($criteria, $dto->page, $dto->perPage);
+        $result->map(fn(Student $student) => StudentResponseDTO::fromEntity($student));
+
+        return $result;
     }
 }

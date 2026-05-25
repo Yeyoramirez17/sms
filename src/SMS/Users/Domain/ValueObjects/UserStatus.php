@@ -34,8 +34,8 @@ enum UserStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Activo',
-            self::INACTIVE => 'Inactivo',
+            self::ACTIVE    => 'Activo',
+            self::INACTIVE  => 'Inactivo',
             self::SUSPENDED => 'Suspendido',
             self::PENDING_PASSWORD_CHANGE => 'Pendiente cambio de contaseña'
         };

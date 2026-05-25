@@ -21,16 +21,20 @@ class DatabaseSeeder extends Seeder
         User::factory(14)->asStudent()->create();
 
         // Create one specific super admin user for testing (No student profile linked)
-        User::factory()->superAdmin()->create([
-            'email' => 'admin@example.com',
-            'password' => Hash::make('secret123'),
-            'status' => 'active',
+        User::factory()->asAdmin()->create([
+            'first_name' => 'Admin',
+            'last_name'  => 'User',
+            'email'      => 'admin@example.com',
+            'password'   => Hash::make('MiPassword123'),
+            'status'     => UserStatus::ACTIVE->value,
         ]);
 
         User::factory()->asStudent()->create([
-            'email' => 'student@example.com',
-            'password' => Hash::make('secret123'),
-            'status' => UserStatus::ACTIVE->value,
+            'first_name' => 'Student',
+            'last_name'  => 'User',
+            'email'      => 'student@example.com',
+            'password'   => Hash::make('MiPassword123'),
+            'status'     => UserStatus::ACTIVE->value,
         ]);
     }
 }

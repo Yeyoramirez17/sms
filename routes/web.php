@@ -1,25 +1,27 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
-use SMS\Users\Infrastructure\Controllers\AuthController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\CreateStudentController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\DeleteStudentController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\EditStudentController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByCriteriaController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByIdController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\UpdateStudentController;
+use Src\SMS\Users\Infrastructure\Controllers\Web\AuthController;
+
+Route::view('/', 'welcome')->name('home');
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login', [AuthController::class, 'store'])->name('login.store');
 });
 
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::view('/dashboard', 'dashboard')->name('dashboard');
+
+    Route::redirect('settings', 'settings/profile');
+    Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
 
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/', GetStudentByCriteriaController::class)->name('index');
@@ -30,8 +32,4 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}', [UpdateStudentController::class, 'update'])->name('update');
         Route::delete('/{id}', [DeleteStudentController::class, 'destroy'])->name('destroy');
     });
-});
-
-Route::get('/', function () {
-    return redirect()->route('login');
 });

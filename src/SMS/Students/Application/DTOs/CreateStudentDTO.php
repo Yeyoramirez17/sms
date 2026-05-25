@@ -7,6 +7,7 @@ namespace Src\SMS\Students\Application\DTOs;
 final readonly class CreateStudentDTO
 {
     public function __construct(
+        public ?string $userId,
         public string $documentType,
         public string $documentNumber,
         public string $firstName,
@@ -29,12 +30,13 @@ final readonly class CreateStudentDTO
     public static function fromArray(array $data): self
     {
         return new self(
-            documentType: $data['document_type'] ?? '',
-            documentNumber: $data['document_number'] ?? '',
-            firstName: $data['first_name'] ?? '',
-            lastName: $data['last_name'] ?? '',
-            birthDate: $data['birth_date'] ?? '',
-            gender: $data['gender'] ?? '',
+            userId: $data['user_id'] ?? null,
+            documentType: $data['document_type'],
+            documentNumber: $data['document_number'],
+            firstName: $data['first_name'],
+            lastName: $data['last_name'],
+            birthDate: $data['birth_date'],
+            gender: $data['gender'],
             bloodType: $data['blood_type'] ?? null,
             epsName: $data['eps_name'] ?? null,
             epsCode: $data['eps_code'] ?? null,
@@ -52,20 +54,21 @@ final readonly class CreateStudentDTO
     public function toArray(): array
     {
         return [
-            'document_type' => $this->documentType,
+            'user_id'         => $this->userId,
+            'document_type'   => $this->documentType,
             'document_number' => $this->documentNumber,
-            'first_name' => $this->firstName,
-            'last_name' => $this->lastName,
-            'birth_date' => $this->birthDate,
-            'gender' => $this->gender,
-            'blood_type' => $this->bloodType,
-            'eps_name' => $this->epsName,
-            'eps_code' => $this->epsCode,
-            'address' => $this->address,
-            'phone' => $this->phone,
-            'email' => $this->email,
-            'photo_path' => $this->photoPath,
-            'attendant_name' => $this->attendantName,
+            'first_name'      => $this->firstName,
+            'last_name'       => $this->lastName,
+            'birth_date'      => $this->birthDate,
+            'gender'          => $this->gender,
+            'blood_type'      => $this->bloodType,
+            'eps_name'        => $this->epsName,
+            'eps_code'        => $this->epsCode,
+            'address'         => $this->address,
+            'phone'           => $this->phone,
+            'email'           => $this->email,
+            'photo_path'      => $this->photoPath,
+            'attendant_name'  => $this->attendantName,
             'attendant_relationship' => $this->attendantRelationship,
             'attendant_phone' => $this->attendantPhone,
             'attendant_email' => $this->attendantEmail,

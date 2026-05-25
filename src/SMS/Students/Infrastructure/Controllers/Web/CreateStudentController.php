@@ -21,8 +21,8 @@ use Src\SMS\Users\Domain\ValueObjects\Role;
 final class CreateStudentController extends Controller
 {
     public function __construct(
-        private CreateStudentUseCase $createStudentUseCase,
-        private CreateUserUseCase $createUserUseCase
+        private CreateUserUseCase $createUserUseCase,
+        private CreateStudentUseCase $createStudentUseCase
     ) {}
 
     public function create(): View
@@ -34,32 +34,34 @@ final class CreateStudentController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = $request->validate();
 
-            $dto = CreateStudentDTO::fromArray($request->validated());
-            $this->createStudentUseCase->execute($dto);
-
-            $this->createUserUseCase->execute(
+            $userResponse = $this->createUserUseCase->execute(
                 new CreateUserDTO(
-                    email: $dto->email,
+                    email: $data['email'],
                     plainPassword: Str::random(10),
                     role: Role::STUDENT->value
                 )
             );
+
+            $dto = CreateStudentDTO::fromArray([...$data, 'user_id' => $userResponse->id]);
+
+            $this->createStudentUseCase->execute($dto);
 
             DB::commit();
 
             return redirect()->route('students.index')
                 ->with('success', 'Student created successfully');
         } catch (DuplicateDocumentException $e) {
-            DB::rollBacck();
+            DB::rollBack();
 
             return back()->withInput()->with('error', $e->getMessage());
         } catch (DuplicateStudentCodeException $e) {
-            DB::rollBacck();
+            DB::rollBack();
 
             return back()->withInput()->with('error', $e->getMessage());
         } catch (\InvalidArgumentException $e) {
-            DB::rollBacck();
+            DB::rollBack();
 
             return back()->withInput()->with('error', $e->getMessage());
         }

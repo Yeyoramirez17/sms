@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Src\SMS\Users\Domain\ValueObjects\Role;
 
 /**
  * @extends Factory<User>
@@ -17,14 +19,14 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => fake()->uuid(),
-            'email' => fake()->unique()->safeEmail(),
+            'id'             => fake()->uuid(),
+            'first_name'     => fake()->firstName(),
+            'last_name'      => fake()->lastName(),
+            'email'          => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'role' => 'student',
-            'status' => 'active',
-            'userable_type' => null,
-            'userable_id' => null,
+            'password'       => static::$password ??= Hash::make('password'),
+            'role'           => 'student',
+            'status'         => 'active',
             'remember_token' => Str::random(10),
         ];
     }
@@ -35,55 +37,49 @@ class UserFactory extends Factory
     public function asStudent(): static
     {
         return $this->state(function (array $attributes) {
-            $student = \App\Models\Student::factory()->create();
-
             return [
-                'role' => 'student',
-                'email' => $student->email,
-                'userable_type' => \App\Models\Student::class,
-                'userable_id' => $student->id,
+                'role'    => Role::STUDENT->value,
             ];
+        })->afterCreating(function (User $user) {
+            Student::factory()->create(
+                [
+                    'user_id' => $user->id,    // Link the student profile to the user.
+                ]
+            );
         });
     }
 
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
 
-    public function admin(): static
+    public function asAdmin(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'role' => 'admin',
-        ]);
-    }
-
-    public function superAdmin(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'super_admin',
         ]);
     }
 
     public function teacher(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'role' => 'teacher',
         ]);
     }
 
     public function suspended(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => 'suspended',
         ]);
     }
 
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => 'inactive',
         ]);
     }

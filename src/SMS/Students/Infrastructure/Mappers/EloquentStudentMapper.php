@@ -6,6 +6,7 @@ namespace Src\SMS\Students\Infrastructure\Mappers;
 
 use App\Models\Student as StudentEloquent;
 use Src\SMS\Shared\Domain\ValueObjects\Email;
+use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Students\Domain\Entities\Student;
 use Src\SMS\Students\Domain\ValueObjects\Attendant;
 use Src\SMS\Students\Domain\ValueObjects\BloodType;
@@ -22,6 +23,7 @@ final class EloquentStudentMapper
     public function toDomain(StudentEloquent $model): Student
     {
         $id         = new StudentId($model->id);
+        $userId     = new UserId($model->user_id);
         $document   = new Document($model->document_type, $model->document_number);
         $fullName   = new FullName($model->first_name, $model->last_name);
         $birthDate  = new DateOfBirth($model->birth_date->format('Y-m-d'));
@@ -56,6 +58,7 @@ final class EloquentStudentMapper
 
         return Student::reconstruct(
             id: $id,
+            userId: $userId,
             document: $document,
             fullName: $fullName,
             birthDate: $birthDate,
@@ -77,6 +80,7 @@ final class EloquentStudentMapper
 
         return [
             'id'              => $student->getId()->value(),
+            'user_id'         => $student->getUserId()->value(),
             'student_code'    => $student->getStudentCode()->value(),
             'document_type'   => $student->getDocument()->type(),
             'document_number' => $student->getDocument()->number(),

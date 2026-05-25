@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+use Src\SMS\Users\Domain\ValueObjects\Role;
+use Src\SMS\Users\Domain\ValueObjects\UserStatus;
 
 /**
  * Eloquent User Model
@@ -23,17 +29,29 @@ use Illuminate\Notifications\Notifiable;
  *
  * @property string $id (UUID)
  * @property string $email
+ * @property string $first_name
+ * @property string $last_name
  * @property string $password (bcrypt hash)
  * @property string $role (super_admin, admin, teacher, student, attendant)
  * @property string $status (active, inactive, suspended, pending_password_change)
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $email_verified_at
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon|null $email_verified_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
-#[Fillable(['email', 'password', 'role', 'status', 'userable_type', 'userable_id', 'remember_token'])]
+#[Fillable(
+    [
+        'id',
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'role',
+        'status',
+    ]
+)]
 #[Hidden(['password', 'remember_token'])]
-final class User extends Authenticatable
+final class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
@@ -56,15 +74,24 @@ final class User extends Authenticatable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
+            'password'   => 'hashed',
         ];
     }
 
     /**
-     * Get the userable entity (Student or Teacher)
+     * Get the owning userable model (teacher or student).
      */
-    public function userable(): MorphTo
+    public function teacher(): HasOne
     {
-        return $this->morphTo();
+        return $this->hasOne(Teacher::class);
+    }
+
+    /**
+     * Get the student profile associated with the user.
+     */
+    public function student(): HasOne
+    {
+        return $this->hasOne(Student::class);
     }
 
     /**
@@ -72,7 +99,7 @@ final class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return in_array($this->role, ['super_admin', 'admin'], true);
+        return $this->role === Role::ADMIN->value;
     }
 
     /**
@@ -80,7 +107,7 @@ final class User extends Authenticatable
      */
     public function isTeacher(): bool
     {
-        return $this->role === 'teacher';
+        return $this->role === Role::TEACHER->value;
     }
 
     /**
@@ -88,7 +115,7 @@ final class User extends Authenticatable
      */
     public function isStudent(): bool
     {
-        return $this->role === 'student';
+        return $this->role === Role::STUDENT->value;
     }
 
     /**
@@ -113,5 +140,17 @@ final class User extends Authenticatable
     public function scopeByRole(Builder $query, string $role)
     {
         return $query->where('role', $role);
+    }
+
+    /**
+     * Get the user's initials
+     */
+    public function initials(): string
+    {
+        return Str::of($this->name)
+            ->explode(' ')
+            ->take(2)
+            ->map(fn($word) => Str::substr($word, 0, 1))
+            ->implode('');
     }
 }

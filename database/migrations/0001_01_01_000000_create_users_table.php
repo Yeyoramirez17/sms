@@ -13,19 +13,20 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role', 50)->default('student');
             $table->string('status', 50)->default('active');
-            $table->string('userable_type')->nullable();
-            $table->uuid('userable_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('remember_token', 100)->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            // Índice para relaciones polimórficas
-            $table->index(['userable_type', 'userable_id'], 'idx_users_userable');
+            $table->index('email', 'idx_users_email');
+            $table->index('first_name', 'idx_students_first_name');
+            $table->index('last_name', 'idx_students_last_name');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

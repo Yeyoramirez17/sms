@@ -6,7 +6,6 @@ namespace Src\SMS\Users\Domain\ValueObjects;
 
 enum Role: string
 {
-    case SUPER_ADMIN = 'super_admin';
     case ADMIN       = 'admin';
     case STUDENT     = 'student';
     case TEACHER     = 'teacher';
@@ -20,7 +19,6 @@ enum Role: string
     public function label(): string
     {
         return match ($this) {
-            self::SUPER_ADMIN => 'Super administrador',
             self::ADMIN       => 'Administrador',
             self::STUDENT     => 'Estudiante',
             self::TEACHER     => 'Docente',

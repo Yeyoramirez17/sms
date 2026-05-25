@@ -127,7 +127,7 @@ final class EloquentStudentRepository implements StudentQueryInterface, StudentR
             ->take($perPage)
             ->get();
 
-        $items = $models->map(fn ($model) => $this->mapper->toDomain($model))->toArray();
+        $items = $models->map(fn($model) => $this->mapper->toDomain($model))->toArray();
 
         return new StudentPaginatedResult(
             items: $items,
@@ -145,7 +145,7 @@ final class EloquentStudentRepository implements StudentQueryInterface, StudentR
             ->limit(50)
             ->get();
 
-        return $models->map(fn ($model) => $this->mapper->toDomain($model))->toArray();
+        return $models->map(fn($model) => $this->mapper->toDomain($model))->toArray();
     }
 
     public function findByAgeRange(int $minAge, int $maxAge): array
@@ -155,7 +155,7 @@ final class EloquentStudentRepository implements StudentQueryInterface, StudentR
 
         $models = StudentEloquent::whereBetween('birth_date', [$minDate, $maxDate])->get();
 
-        return $models->map(fn ($model) => $this->mapper->toDomain($model))->toArray();
+        return $models->map($this->mapper->toDomain(...))->toArray();
     }
 
     public function findAll(int $page = 1, int $perPage = 20): StudentPaginatedResult

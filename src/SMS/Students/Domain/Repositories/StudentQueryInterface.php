@@ -47,34 +47,3 @@ interface StudentQueryInterface
      */
     public function findAll(int $page = 1, int $perPage = 20): StudentPaginatedResult;
 }
-
-class StudentSearchCriteria
-{
-    public function __construct(
-        public readonly ?string $name = null,
-        public readonly ?string $documentNumber = null,
-        public readonly ?string $studentCode = null,
-        public readonly ?string $gender = null,
-        public readonly ?int $minAge = null,
-        public readonly ?int $maxAge = null,
-        public readonly ?string $eps = null,
-        public readonly ?string $orderBy = 'full_name',
-        public readonly ?string $orderDirection = 'asc'
-    ) {}
-}
-
-class StudentPaginatedResult
-{
-    public function __construct(
-        public readonly array $items,
-        public readonly int $total,
-        public readonly int $currentPage,
-        public readonly int $perPage,
-        public readonly int $lastPage
-    ) {}
-
-    public static function empty(): self
-    {
-        return new self([], 0, 1, 20, 0);
-    }
-}

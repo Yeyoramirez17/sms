@@ -33,7 +33,7 @@ final readonly class SearchStudentsDTO
             page: isset($data['page']) ? max(1, (int) $data['page']) : 1,
             perPage: isset($data['per_page']) ? min(100, max(1, (int) $data['per_page'])) : 20,
             orderBy: $data['order_by'] ?? 'full_name',
-            orderDirection: in_array($data['order_direction'] ?? 'asc', ['asc', 'desc']) ? $data['order_direction'] : 'asc',
+            orderDirection: $data['order_direction'] ?? 'asc',
         );
     }
 }

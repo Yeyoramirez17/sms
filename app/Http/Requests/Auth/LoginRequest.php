@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class LoginRequest extends FormRequest
 {
@@ -17,19 +18,25 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
-            'remember' => ['boolean'],
+            'password' => [
+                'required',
+                Password::min(8)
+                    ->letters()
+                    ->numbers()
+                    ->mixedCase(),
+                // ->uncompromised(),
+            ],
+            'remember' => ['nullable'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico debe ser válido.',
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'email.required' => __('The email field is required.'),
+            'email.email' => __('The email must be a valid email address.'),
+            'password.required' => __('The password field is required.'),
+            'password.min' => __('The password must be at least 8 characters.'),
         ];
     }
 }
-
