@@ -10,7 +10,7 @@ use Src\SMS\Users\Application\DTOs\CreateUserDTO;
 use Src\SMS\Users\Application\DTOs\UserResponseDTO;
 use Src\SMS\Users\Domain\Entities\User;
 use Src\SMS\Users\Domain\Exceptions\DuplicateEmailException;
-use Src\SMS\Users\Domain\Repositories\UserRepositoryInterface;
+use Src\SMS\Users\Domain\Persistence\UserRepositoryInterface;
 use Src\SMS\Users\Domain\ValueObjects\Role;
 use Src\SMS\Users\Domain\ValueObjects\UserStatus;
 

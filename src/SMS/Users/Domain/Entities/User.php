@@ -30,10 +30,6 @@ final class User
     private ?\DateTimeImmutable $createdAt;
     private ?\DateTimeImmutable $updatedAt;
 
-    /**
-     * @var array<int, object> Domain events that occurred during this operation
-     */
-    private array $domainEvents = [];
 
     private function __construct(
         UserId $id,
@@ -236,26 +232,6 @@ final class User
     public function equals(User $other): bool
     {
         return $this->userId->equals($other->userId);
-    }
-
-    // ===== Domain Events =====
-
-    /**
-     * @return array<int, object>
-     */
-    public function getDomainEvents(): array
-    {
-        return $this->domainEvents;
-    }
-
-    protected function recordEvent(object $event): void
-    {
-        $this->domainEvents[] = $event;
-    }
-
-    public function clearDomainEvents(): void
-    {
-        $this->domainEvents = [];
     }
 
     public function __toString(): string

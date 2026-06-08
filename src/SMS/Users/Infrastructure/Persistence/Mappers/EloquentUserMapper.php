@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Users\Infrastructure\Mappers;
+namespace Src\SMS\Users\Infrastructure\Persistence\Mappers;
 
 use App\Models\User as UserEloquent;
 use Src\SMS\Shared\Domain\ValueObjects\Email;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\SMS\Students\Domain\Entities;
 
-use App\Models\User;
 use Src\SMS\Shared\Domain\ValueObjects\Email;
 use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Students\Domain\ValueObjects\Attendant;
@@ -16,7 +15,6 @@ use Src\SMS\Students\Domain\ValueObjects\FullName;
 use Src\SMS\Students\Domain\ValueObjects\Gender;
 use Src\SMS\Students\Domain\ValueObjects\StudentCode;
 use Src\SMS\Students\Domain\ValueObjects\StudentId;
-
 
 /**
  * Represents a student entity in the school management system.
@@ -177,7 +175,7 @@ final class Student
         ?Attendant $attendant = null
     ): self {
         $student = new self(
-            new StudentId,
+            new StudentId(),
             $userId,
             $document,
             $fullName,

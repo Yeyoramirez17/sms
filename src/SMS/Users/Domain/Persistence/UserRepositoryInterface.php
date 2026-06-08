@@ -2,12 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Users\Domain\Repositories;
+namespace Src\SMS\Users\Domain\Persistence;
 
+use Src\SMS\Shared\Domain\Persistence\Criteria\Contracts\CriteriaInterface;
 use Src\SMS\Shared\Domain\ValueObjects\Email;
 use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Users\Domain\Entities\User;
 
+/**
+ * Interface UserRepositoryInterface
+ *
+ * This interface defines the contract for a user repository, which is responsible for managing the persistence of User entities.
+ * It includes methods for saving, updating, finding, and deleting users, as well as querying users based on specific criteria.
+ */
 interface UserRepositoryInterface
 {
     /**
@@ -17,7 +24,6 @@ interface UserRepositoryInterface
      * @return User The saved user.
      */
     public function save(User $user): User;
-
 
     /**
      * Update an existing user
@@ -49,4 +55,12 @@ interface UserRepositoryInterface
      * Delete a user from persistence
      */
     public function delete(User $user): void;
+
+    /**
+     * Find users matching the given criteria, with pagination.
+     *
+     * @param CriteriaInterface $criteria The criteria to filter and paginate the users.
+     * @return UserPaginatedResult A paginated result containing the users matching the criteria and pagination metadata.
+     */
+    public function findByCriteria(CriteriaInterface $criteria): UserPaginatedResult;
 }

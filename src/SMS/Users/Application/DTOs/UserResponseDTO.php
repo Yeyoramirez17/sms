@@ -34,7 +34,8 @@ final readonly class UserResponseDTO
             email: $user->getEmail()->value(),
             role: $user->getRole()->value,
             status: $user->getStatus()->value,
-            createdAt: $user->getCreatedAt()
+            createdAt: $user->getCreatedAt(),
+            updatedAt: $user->getUpdatedAt()
         );
     }
 

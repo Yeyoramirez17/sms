@@ -2,20 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Src\SMS\Users\Infrastructure\Repositories;
+namespace Src\SMS\Users\Infrastructure\Persistence\Repositories;
 
 use App\Models\User as UserEloquent;
+use Override;
+use Src\SMS\Shared\Domain\Persistence\Criteria\Contracts\CriteriaInterface;
+use Src\SMS\Shared\Domain\Persistence\Criteria\Criteria;
 use Src\SMS\Shared\Domain\ValueObjects\Email;
 use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Users\Domain\Entities\User;
 use Src\SMS\Users\Domain\Exceptions\UserNotFoundException;
-use Src\SMS\Users\Domain\Repositories\UserRepositoryInterface;
-use Src\SMS\Users\Infrastructure\Mappers\EloquentUserMapper;
+use Src\SMS\Users\Domain\Persistence\UserPaginatedResult;
+use Src\SMS\Users\Domain\Persistence\UserRepositoryInterface;
+use Src\SMS\Users\Infrastructure\Persistence\Criteria\CriteriaToEloquentApplier;
+use Src\SMS\Users\Infrastructure\Persistence\Mappers\EloquentUserMapper;
 
 final class EloquentUserRepository implements UserRepositoryInterface
 {
     public function __construct(
         private readonly EloquentUserMapper $mapper,
+        private readonly CriteriaToEloquentApplier $applier,
     ) {}
 
     public function save(User $user): User
@@ -39,8 +45,8 @@ final class EloquentUserRepository implements UserRepositoryInterface
     {
         $data = $this->mapper->toArray($user);
 
-        /** @var UserEloquent $userEloquent */
-        $userEloquent = UserEloquent::find($user->getId()->value());
+        /** @var \App\Models\User|null $userEloquent */
+        $userEloquent = UserEloquent::find($user->getId()->value(), '*');
 
         if ($userEloquent === null) {
             throw new UserNotFoundException($user->getId()->value());
@@ -87,5 +93,33 @@ final class EloquentUserRepository implements UserRepositoryInterface
     public function delete(User $user): void
     {
         UserEloquent::where('id', $user->getId()->value())->delete();
+    }
+
+    #[Override]
+    public function findByCriteria(CriteriaInterface $criteria): UserPaginatedResult
+    {
+        $query = UserEloquent::query();
+
+        $query = $this->applier->apply($query, $criteria);
+
+        $total = $query->toBase()->getCountForPagination();
+
+        $models = $query->get();
+        $items  = $models->map(fn($model) => $this->mapper->toEntityFromModel($model))->all();
+
+        $limit  = $criteria->getPagination()?->limit  ?? count($items);
+        $offset = $criteria->getPagination()?->offset ?? 0;
+
+        $currentPage = $limit > 0 ? (int) floor($offset / $limit) + 1 : 1;
+        $perPage     = $limit > 0 ? $limit : $total;
+        $lastPage    = $limit > 0 ? max(1, (int) ceil($total / $limit)) : 1;
+
+        return new UserPaginatedResult(
+            $items,
+            $total,
+            $currentPage,
+            $perPage,
+            $lastPage,
+        );
     }
 }

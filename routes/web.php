@@ -8,6 +8,7 @@ use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByCriteriaControll
 use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByIdController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\UpdateStudentController;
 use Src\SMS\Users\Infrastructure\Controllers\Web\AuthController;
+use Src\SMS\Users\Infrastructure\Controllers\Web\GetUsersController;
 
 Route::view('/', 'welcome')->name('home');
 
@@ -24,7 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
 
     Route::prefix('students')->name('students.')->group(function () {
-        Route::get('/', GetStudentByCriteriaController::class)->name('index');
+        Route::get('/', GetUsersController::class)->name('index');
         Route::get('/create', [CreateStudentController::class, 'create'])->name('create');
         Route::post('/', [CreateStudentController::class, 'store'])->name('store');
         Route::get('/{id}', GetStudentByIdController::class)->name('show');
