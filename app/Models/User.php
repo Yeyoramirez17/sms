@@ -17,6 +17,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Livewire\WithPagination;
 use Src\SMS\Users\Domain\ValueObjects\Role;
 use Src\SMS\Users\Domain\ValueObjects\UserStatus;
 
@@ -57,6 +58,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     use HasFactory;
     use HasUuids;
     use Notifiable;
+    use WithPagination;
 
     protected $keyType = 'string';
 

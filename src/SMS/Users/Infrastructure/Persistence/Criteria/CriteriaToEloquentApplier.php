@@ -17,7 +17,7 @@ final class CriteriaToEloquentApplier
      *
      * @param Builder $query The Eloquent query builder instance to apply the criteria to.
      * @param CriteriaInterface $criteria The criteria to apply to the query builder.
-     * @return Builder The modified Eloquent query builder instance with the applied criteria.
+     * @return \Illuminate\Database\Eloquent\Builder The modified Eloquent query builder instance with the applied criteria.
      */
     public function apply(Builder $query, CriteriaInterface $criteria): Builder
     {
@@ -57,7 +57,7 @@ final class CriteriaToEloquentApplier
         $value    = $criterion->value;
 
         return match ($operator) {
-            Operator::EQUALS       => $query->where(column: $field, value: $value),
+            Operator::EQUALS       => $query->where($field, $value),
             Operator::NOT_EQUALS   => $query->where($field, $operator->value, $value),
             Operator::GREATER_THAN => $query->where($field, $operator->value, $value),
             Operator::GREATER_THAN_OR_EQUALS => $query->where($field, $operator->value, $value),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\SMS\Users\Infrastructure\Persistence\Repositories;
 
 use App\Models\User as UserEloquent;
+use Illuminate\Support\Facades\Log;
 use Override;
 use Src\SMS\Shared\Domain\Persistence\Criteria\Contracts\CriteriaInterface;
 use Src\SMS\Shared\Domain\Persistence\Criteria\Criteria;
@@ -102,9 +103,10 @@ final class EloquentUserRepository implements UserRepositoryInterface
 
         $query = $this->applier->apply($query, $criteria);
 
-        $total = $query->toBase()->getCountForPagination();
+        $total = (clone $query)->toBase()->getCountForPagination();
 
         $models = $query->get();
+
         $items  = $models->map(fn($model) => $this->mapper->toEntityFromModel($model))->all();
 
         $limit  = $criteria->getPagination()?->limit  ?? count($items);

@@ -19,19 +19,19 @@ final class UserSearchSpecification
 
         if ($dto->firstName) {
             $criteria = $criteria->addFilter(
-                Criterion::equals('first_name', $dto->firstName)
+                Criterion::like('first_name', $dto->firstName)
             );
         }
 
         if ($dto->lastName) {
             $criteria = $criteria->addFilter(
-                Criterion::equals('last_name', $dto->lastName)
+                Criterion::like('last_name', $dto->lastName)
             );
         }
 
         if ($dto->email) {
             $criteria = $criteria->addFilter(
-                Criterion::equals('email', $dto->email)
+                Criterion::like('email', $dto->email)
             );
         }
 
@@ -48,7 +48,7 @@ final class UserSearchSpecification
         }
 
         $criteria = $criteria->sort(
-            Sort::new($dto->orderBy, $dto->orderDirection)
+            Sort::new($dto->sort, $dto->order)
         );
 
         $limit  = $dto->limit  ?? $dto->perPage;
