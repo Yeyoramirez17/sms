@@ -15,18 +15,19 @@ return new class extends Migration
             $table->string('document_number', 15)->unique();
             $table->date('birth_date');
             $table->string('gender', 50)->nullable();
+            $table->string('address', 255);
+            $table->string('phone', 20);
             $table->string('blood_type', 3)->nullable();
             $table->string('eps_name', 100)->nullable();
             $table->string('eps_code', 10)->nullable();
-            $table->string('address', 255)->nullable();
-            $table->string('phone', 20);
             $table->string('student_code', 20)->unique();
+            $table->string('institutional_email', 100)->nullable();
             $table->string('photo_path', 255)->nullable();
+            $table->date('enrollment_date')->nullable();
             $table->string('attendant_name', 100);
             $table->string('attendant_relationship', 50);
             $table->string('attendant_phone', 20);
             $table->string('attendant_email', 100)->nullable();
-            $table->date('enrollment_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

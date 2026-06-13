@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Src\SMS\Students\Infrastructure\Repositories;
 
 use App\Models\Student as StudentEloquent;
+use App\Models\User;
+use Src\SMS\Shared\Domain\ValueObjects\UserId;
+use Override;
 use Src\SMS\Students\Domain\Entities\Student;
 use Src\SMS\Students\Domain\Repositories\StudentPaginatedResult;
 use Src\SMS\Students\Domain\Repositories\StudentQueryInterface;
@@ -35,9 +38,7 @@ final class EloquentStudentRepository implements StudentQueryInterface, StudentR
     {
         $model = StudentEloquent::find($studentId->value());
 
-        if ($model === null) {
-            return null;
-        }
+        if ($model === null) return null;
 
         return $this->mapper->toDomain($model);
     }
@@ -156,6 +157,16 @@ final class EloquentStudentRepository implements StudentQueryInterface, StudentR
         $models = StudentEloquent::whereBetween('birth_date', [$minDate, $maxDate])->get();
 
         return $models->map($this->mapper->toDomain(...))->toArray();
+    }
+
+    #[Override]
+    public function findByUserId(UserId $userId): ?Student
+    {
+        $student = StudentEloquent::where('user_id', $userId->value())->first();
+
+        if (!$student) return null;
+
+        return $this->mapper->toDomain($student);
     }
 
     public function findAll(int $page = 1, int $perPage = 20): StudentPaginatedResult

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Src\SMS\Users\Domain\ValueObjects\Role;
+use Src\SMS\Users\Domain\ValueObjects\UserStatus;
 
 /**
  * @extends Factory<User>
@@ -26,7 +27,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password'       => static::$password ??= Hash::make('password'),
             'role'           => 'student',
-            'status'         => 'active',
+            'status'         => fake()->randomElement(UserStatus::cases()),
             'remember_token' => Str::random(10),
         ];
     }
@@ -44,6 +45,7 @@ class UserFactory extends Factory
             Student::factory()->create(
                 [
                     'user_id' => $user->id,    // Link the student profile to the user.
+                    'institutional_email' => sprintf('%s.%s@school.edu', $user->first_name, $user->last_name),
                 ]
             );
         });

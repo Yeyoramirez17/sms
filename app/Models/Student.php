@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
 )]
 #[Fillable(
     'id',
+    'user_id',
     'document_type',
     'document_number',
     'birth_date',
@@ -47,12 +48,13 @@ use Illuminate\Support\Carbon;
     'address',
     'phone',
     'student_code',
+    'institutional_email',
     'photo_path',
+    'enrollment_date',
     'attendant_name',
     'attendant_relationship',
     'attendant_phone',
     'attendant_email',
-    'enrollment_date'
 )]
 class Student extends Model
 {
@@ -64,7 +66,7 @@ class Student extends Model
     public function casts(): array
     {
         return [
-            'birth_date' => 'date',
+            'birth_date'      => 'date',
             'enrollment_date' => 'date',
         ];
     }

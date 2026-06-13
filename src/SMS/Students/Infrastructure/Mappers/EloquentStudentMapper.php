@@ -25,11 +25,10 @@ final class EloquentStudentMapper
         $id         = new StudentId($model->id);
         $userId     = new UserId($model->user_id);
         $document   = new Document($model->document_type, $model->document_number);
-        $fullName   = new FullName($model->first_name, $model->last_name);
         $birthDate  = new DateOfBirth($model->birth_date->format('Y-m-d'));
         $studentCode = StudentCode::create($model->student_code);
 
-        $email = new Email($model->email);
+        $institutionalEmail = new Email($model->institutional_email);
 
         $bloodType = $model->blood_type !== null
             ? new BloodType($model->blood_type)
@@ -56,21 +55,25 @@ final class EloquentStudentMapper
 
         $gender = Gender::fromString($model->gender);
 
+        $enrollmentDate = $model->enrollment_date
+            ? $model->enrollment_date->toDateTimeImmutable()
+            : null;
+
         return Student::reconstruct(
             id: $id,
             userId: $userId,
             document: $document,
-            fullName: $fullName,
             birthDate: $birthDate,
             gender: $gender,
-            studentCode: $studentCode,
-            bloodType: $bloodType,
-            eps: $eps,
             address: $model->address,
             phone: $model->phone,
-            email: $email,
+            studentCode: $studentCode,
+            institutionalEmail: $institutionalEmail,
             photoPath: $model->photo_path,
-            attendant: $attendant
+            enrollmentDate: $enrollmentDate,
+            attendant: $attendant,
+            bloodType: $bloodType,
+            eps: $eps,
         );
     }
 
@@ -84,21 +87,20 @@ final class EloquentStudentMapper
             'student_code'    => $student->getStudentCode()->value(),
             'document_type'   => $student->getDocument()->type(),
             'document_number' => $student->getDocument()->number(),
-            'first_name'      => $student->getFullName()->firstName(),
-            'last_name'       => $student->getFullName()->lastName(),
             'birth_date'      => $student->getBirthDate()->toString(),
             'gender'          => $student->getGender()->value,
-            'blood_type'      => $student->getBloodType()?->value(),
-            'eps_name'        => $student->getEps()?->name(),
-            'eps_code'        => $student->getEps()?->code(),
-            'email'           => $student->getEmail()?->value(),
             'phone'           => $student->getPhone(),
             'address'         => $student->getAddress(),
+            'institutionalEmail' => $student->getInstitutionalEmail()?->value(),
             'photo_path'      => $student->getPhotoPath(),
+            'eps_name'        => $student->getEps()?->name(),
+            'eps_code'        => $student->getEps()?->code(),
+            'blood_type'      => $student->getBloodType()?->value(),
             'attendant_name'  => $attendant?->name(),
             'attendant_relationship' => $attendant?->relationship(),
             'attendant_phone' => $attendant?->phone(),
             'attendant_email' => $attendant?->email()?->value(),
+            'enrollment_date' => $student->getEnrollmentDate()?->format('Y-m-d'),
         ];
     }
 }

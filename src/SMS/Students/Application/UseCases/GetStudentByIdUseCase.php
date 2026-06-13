@@ -15,15 +15,13 @@ final readonly class GetStudentByIdUseCase
         private StudentRepositoryInterface $studentRepository,
     ) {}
 
-    public function execute(string $studentId): StudentResponseDTO
+    public function execute(string $studentId): ?StudentResponseDTO
     {
         $id = new StudentId($studentId);
 
         $student = $this->studentRepository->findById($id);
 
-        if ($student === null) {
-            throw StudentNotFoundException::withId($studentId);
-        }
+        if ($student === null) return null;
 
         return StudentResponseDTO::fromEntity($student);
     }

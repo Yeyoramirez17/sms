@@ -62,9 +62,7 @@ final class EloquentUserRepository implements UserRepositoryInterface
     {
         $model = UserEloquent::find($userId->value());
 
-        if ($model === null) {
-            return null;
-        }
+        if ($model === null) return null;
 
         return $this->mapper->toEntityFromModel($model);
     }

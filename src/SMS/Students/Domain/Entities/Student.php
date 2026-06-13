@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Src\SMS\Students\Domain\Entities;
 
+use DateTimeImmutable;
 use Src\SMS\Shared\Domain\ValueObjects\Email;
 use Src\SMS\Shared\Domain\ValueObjects\UserId;
 use Src\SMS\Students\Domain\ValueObjects\Attendant;
@@ -24,50 +25,48 @@ final class Student
     private StudentId $id;
     private UserId $userId;
     private Document $document;
-    private FullName $fullName;
     private DateOfBirth $birthDate;
     private Gender $gender;
-    private ?BloodType $bloodType;
-    private ?Eps $eps;
-    private ?string $address;
-    private ?string $phone;
-    private ?Email $email;
-    private ?string $photoPath;
+    private string $address;
+    private string $phone;
     private StudentCode $studentCode;
+    private Email $institutionalEmail;
+    private ?string $photoPath;
+    private ?DateTimeImmutable $enrollmentDate;
+    private ?Eps $eps;
+    private ?BloodType $bloodType;
     private ?Attendant $attendant;
-
-    private array $domainEvents = [];
 
     private function __construct(
         StudentId $id,
         UserId $userId,
         Document $document,
-        FullName $fullName,
         DateOfBirth $birthDate,
         Gender $gender,
+        string $address,
+        string $phone,
         StudentCode $studentCode,
+        Email $institutionalEmail,
+        ?string $photoPath = null,
+        ?DateTimeImmutable $enrollmentDate = null,
+        ?Attendant $attendant = null,
         ?BloodType $bloodType = null,
         ?Eps $eps = null,
-        ?string $address = null,
-        ?string $phone = null,
-        ?Email $email = null,
-        ?string $photoPath = null,
-        ?Attendant $attendant = null
     ) {
         $this->id = $id;
         $this->userId = $userId;
         $this->document = $document;
-        $this->fullName = $fullName;
         $this->birthDate = $birthDate;
         $this->gender = $gender;
-        $this->bloodType = $bloodType;
-        $this->eps = $eps;
         $this->address = $address;
         $this->phone = $phone;
-        $this->email = $email;
-        $this->photoPath = $photoPath;
         $this->studentCode = $studentCode;
+        $this->institutionalEmail = $institutionalEmail;
+        $this->photoPath = $photoPath;
+        $this->enrollmentDate = $enrollmentDate;
         $this->attendant = $attendant;
+        $this->bloodType = $bloodType;
+        $this->eps = $eps;
     }
 
     public function getId(): StudentId
@@ -85,11 +84,6 @@ final class Student
         return $this->document;
     }
 
-    public function getFullName(): FullName
-    {
-        return $this->fullName;
-    }
-
     public function getBirthDate(): DateOfBirth
     {
         return $this->birthDate;
@@ -98,16 +92,6 @@ final class Student
     public function getGender(): Gender
     {
         return $this->gender;
-    }
-
-    public function getBloodType(): ?BloodType
-    {
-        return $this->bloodType;
-    }
-
-    public function getEps(): ?Eps
-    {
-        return $this->eps;
     }
 
     public function getAddress(): ?string
@@ -120,9 +104,14 @@ final class Student
         return $this->phone;
     }
 
-    public function getEmail(): ?Email
+    public function getStudentCode(): StudentCode
     {
-        return $this->email;
+        return $this->studentCode;
+    }
+
+    public function getInstitutionalEmail(): ?Email
+    {
+        return $this->institutionalEmail;
     }
 
     public function getPhotoPath(): ?string
@@ -130,9 +119,9 @@ final class Student
         return $this->photoPath;
     }
 
-    public function getStudentCode(): StudentCode
+    public function getEnrollmentDate(): ?DateTimeImmutable
     {
-        return $this->studentCode;
+        return $this->enrollmentDate;
     }
 
     public function getAttendant(): ?Attendant
@@ -140,58 +129,66 @@ final class Student
         return $this->attendant;
     }
 
+    public function getEps(): ?Eps
+    {
+        return $this->eps;
+    }
+
+    public function getBloodType(): ?BloodType
+    {
+        return $this->bloodType;
+    }
+
     /**
      * Creates a new Student entity with the provided information.
      *
      * @param  UserId  $userId  The unique identifier referenced from the User entity.
      * @param  Document  $document  The student's document information.
-     * @param  FullName  $fullName  The student's full name.
      * @param  DateOfBirth  $birthDate  The student's date of birth.
      * @param  Gender  $gender  The student's gender.
+     * @param  string $address  The student's address, if available.
+     * @param  string $phone  The student's phone number, if available.
      * @param  StudentCode  $studentCode  The student's unique code.
+     * @param  Email $institutionalEmail  The student's institutional email address, if available.
+     * @param  string|null  $photoPath  The file path to the student's photo, if available.
+     * @param  DateTimeImmutable|null  $enrollmentDate  The date of the student's enrollment, if available.
+     * @param  Attendant|null  $attendant  The student's attendant information, if available.
      * @param  BloodType|null  $bloodType  The student's blood type, if available.
      * @param  Eps|null  $eps  The student's EPS information, if available.
-     * @param  string|null  $address  The student's address, if available.
-     * @param  string|null  $phone  The student's phone number, if available.
-     * @param  Email|null  $email  The student's email address, if available.
-     * @param  string|null  $photoPath  The file path to the student's photo, if available.
-     * @param  Attendant|null  $attendant  The student's attendant information, if available.
      *
      * @return self A new instance of the Student entity.
      */
     public static function create(
         UserId $userId,
         Document $document,
-        FullName $fullName,
         DateOfBirth $birthDate,
         Gender $gender,
+        string $address,
+        string $phone,
         StudentCode $studentCode,
+        Email $institutionalEmail,
+        ?string $photoPath = null,
+        ?DateTimeImmutable $enrollmentDate = null,
+        ?Attendant $attendant = null,
         ?BloodType $bloodType = null,
         ?Eps $eps = null,
-        ?string $address = null,
-        ?string $phone = null,
-        ?Email $email = null,
-        ?string $photoPath = null,
-        ?Attendant $attendant = null
     ): self {
-        $student = new self(
+        return new self(
             new StudentId(),
-            $userId,
-            $document,
-            $fullName,
-            $birthDate,
-            $gender,
-            $studentCode,
-            $bloodType,
-            $eps,
-            $address,
-            $phone,
-            $email,
-            $photoPath,
-            $attendant
+            userId: $userId,
+            document: $document,
+            birthDate: $birthDate,
+            gender: $gender,
+            address: $address,
+            phone: $phone,
+            studentCode: $studentCode,
+            institutionalEmail: $institutionalEmail,
+            photoPath: $photoPath,
+            enrollmentDate: $enrollmentDate,
+            attendant: $attendant,
+            bloodType: $bloodType,
+            eps: $eps,
         );
-
-        return $student;
     }
 
     /**
@@ -200,50 +197,50 @@ final class Student
      * @param  StudentId  $id  The unique identifier of the student.
      * @param  UserId  $userId  The unique identifier of the student.
      * @param  Document  $document  The student's document information.
-     * @param  FullName  $fullName  The student's full name.
      * @param  DateOfBirth  $birthDate  The student's date of birth.
      * @param  Gender  $gender  The student's gender.
+     * @param  string  $address  The student's address, if available.
+     * @param  string  $phone  The student's phone number, if available.
      * @param  StudentCode  $studentCode  The student's unique code.
+     * @param  Email  $institutionalEmail  The student's institutional email address, if available.
+     * @param  string|null  $photoPath  The file path to the student's photo, if available.
+     * @param  DateTimeImmutable|null  $enrollmentDate  The date of the student's enrollment, if available.
+     * @param  Attendant|null  $attendant  The student's attendant information, if available.
      * @param  BloodType|null  $bloodType  The student's blood type, if available.
      * @param  Eps|null  $eps  The student's EPS information, if available.
-     * @param  string|null  $address  The student's address, if available.
-     * @param  string|null  $phone  The student's phone number, if available.
-     * @param  Email|null  $email  The student's email address, if available.
-     * @param  string|null  $photoPath  The file path to the student's photo, if available.
-     * @param  Attendant|null  $attendant  The student's attendant information, if available.
      * @return self A reconstructed Student entity.
      */
     public static function reconstruct(
         StudentId $id,
         UserId $userId,
         Document $document,
-        FullName $fullName,
         DateOfBirth $birthDate,
         Gender $gender,
+        string $address,
+        string $phone,
         StudentCode $studentCode,
+        Email $institutionalEmail,
+        ?string $photoPath = null,
+        ?DateTimeImmutable $enrollmentDate = null,
+        ?Attendant $attendant = null,
         ?BloodType $bloodType = null,
         ?Eps $eps = null,
-        ?string $address = null,
-        ?string $phone = null,
-        ?Email $email = null,
-        ?string $photoPath = null,
-        ?Attendant $attendant = null
     ): self {
         return new self(
-            $id,
-            $userId,
-            $document,
-            $fullName,
-            $birthDate,
-            $gender,
-            $studentCode,
-            $bloodType,
-            $eps,
-            $address,
-            $phone,
-            $email,
-            $photoPath,
-            $attendant
+            id: $id,
+            userId: $userId,
+            document: $document,
+            birthDate: $birthDate,
+            gender: $gender,
+            address: $address,
+            phone: $phone,
+            studentCode: $studentCode,
+            institutionalEmail: $institutionalEmail,
+            photoPath: $photoPath,
+            enrollmentDate: $enrollmentDate,
+            attendant: $attendant,
+            bloodType: $bloodType,
+            eps: $eps,
         );
     }
 
@@ -269,11 +266,6 @@ final class Student
         return $this->birthDate->isAgeAppropriate($minAge, $maxAge);
     }
 
-    public function changeFullName(FullName $fullName): void
-    {
-        $this->fullName = $fullName;
-    }
-
     public function changeGender(Gender $gender): void
     {
         $this->gender = $gender;
@@ -281,7 +273,7 @@ final class Student
 
     public function hasValidEmail(): bool
     {
-        return $this->email !== null;
+        return $this->institutionalEmail !== null;
     }
 
     public function hasValidParentEmail(): bool
@@ -304,12 +296,12 @@ final class Student
         $this->phone = preg_replace('/[^0-9]/', '', $newPhone);
     }
 
-    public function changeEmail(Email $newEmail): void
+    public function changeInstitutionalEmail(Email $newEmail): void
     {
-        if ($this->email->equals($newEmail)) {
+        if ($this->institutionalEmail->equals($newEmail)) {
             return;
         }
-        $this->email = $newEmail;
+        $this->institutionalEmail = $newEmail;
     }
 
     public function updateBloodType(?BloodType $bloodType): void
@@ -355,26 +347,11 @@ final class Student
         return $this->id->equals($other->getId());
     }
 
-    public function getDomainEvents(): array
-    {
-        return $this->domainEvents;
-    }
-
-    protected function recordEvent(object $event): void
-    {
-        $this->domainEvents[] = $event;
-    }
-
-    public function clearDomainEvents(): void
-    {
-        $this->domainEvents = [];
-    }
-
     public function __toString(): string
     {
         return sprintf(
             '%s (%s) - %s',
-            $this->fullName->value(),
+            $this->institutionalEmail->value(),
             $this->studentCode->value(),
             $this->document
         );

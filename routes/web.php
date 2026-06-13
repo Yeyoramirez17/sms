@@ -6,6 +6,7 @@ use Src\SMS\Students\Infrastructure\Controllers\Web\DeleteStudentController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\EditStudentController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByCriteriaController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByIdController;
+use Src\SMS\Students\Infrastructure\Controllers\Web\GetStudentByUserIdController;
 use Src\SMS\Students\Infrastructure\Controllers\Web\UpdateStudentController;
 use Src\SMS\Users\Infrastructure\Controllers\Web\AuthController;
 use Src\SMS\Users\Infrastructure\Controllers\Web\GetUsersController;
@@ -28,7 +29,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', GetUsersController::class)->name('index');
         Route::get('/create', [CreateStudentController::class, 'create'])->name('create');
         Route::post('/', [CreateStudentController::class, 'store'])->name('store');
-        Route::get('/{id}', GetStudentByIdController::class)->name('show');
+        Route::get('/{user_id}', GetStudentByUserIdController::class)->name('show');
         Route::get('/{id}/edit', EditStudentController::class)->name('edit');
         Route::put('/{id}', [UpdateStudentController::class, 'update'])->name('update');
         Route::delete('/{id}', [DeleteStudentController::class, 'destroy'])->name('destroy');
