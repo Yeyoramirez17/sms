@@ -283,7 +283,9 @@ final class Student
 
     public function hasParentContact(): bool
     {
-        return $this->attendant !== null && ($this->attendant->phone() !== null || $this->attendant->email() !== null);
+        return $this->attendant !== null &&
+            ($this->attendant->phone() !== null ||
+                $this->attendant->email() !== null);
     }
 
     public function changeAddress(string $newAddress): void
@@ -293,7 +295,7 @@ final class Student
 
     public function changePhone(string $newPhone): void
     {
-        $this->phone = preg_replace('/[^0-9]/', '', $newPhone);
+        $this->phone = preg_replace("/[^0-9]/", "", $newPhone);
     }
 
     public function changeInstitutionalEmail(Email $newEmail): void
@@ -338,7 +340,7 @@ final class Student
             $this->attendant->name(),
             $this->attendant->relationship(),
             $this->attendant->phone(),
-            new Email($newEmail)
+            new Email($newEmail),
         );
     }
 
@@ -350,10 +352,10 @@ final class Student
     public function __toString(): string
     {
         return sprintf(
-            '%s (%s) - %s',
+            "%s (%s) - %s",
             $this->institutionalEmail->value(),
             $this->studentCode->value(),
-            $this->document
+            $this->document,
         );
     }
 }

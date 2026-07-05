@@ -22,48 +22,52 @@ final class CreateStudentController extends Controller
 {
     public function __construct(
         private CreateUserUseCase $createUserUseCase,
-        private CreateStudentUseCase $createStudentUseCase
+        private CreateStudentUseCase $createStudentUseCase,
     ) {}
 
     public function create(): View
     {
-        return view('students.create');
+        return view("students.create");
     }
 
     public function store(CreateStudentRequest $request): RedirectResponse
     {
         DB::beginTransaction();
         try {
-            $data = $request->validate();
+            $data = $request->validated();
 
             $userResponse = $this->createUserUseCase->execute(
                 new CreateUserDTO(
-                    email: $data['email'],
+                    email: $data["email"],
                     plainPassword: Str::random(10),
-                    role: Role::STUDENT->value
-                )
+                    role: Role::STUDENT->value,
+                ),
             );
 
-            $dto = CreateStudentDTO::fromArray([...$data, 'user_id' => $userResponse->id]);
+            $dto = CreateStudentDTO::fromArray([
+                ...$data,
+                "user_id" => $userResponse->id,
+            ]);
 
             $this->createStudentUseCase->execute($dto);
 
             DB::commit();
 
-            return redirect()->route('students.index')
-                ->with('success', 'Student created successfully');
+            return redirect()
+                ->route("students.index")
+                ->with("success", "Student created successfully");
         } catch (DuplicateDocumentException $e) {
             DB::rollBack();
 
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with("error", $e->getMessage());
         } catch (DuplicateStudentCodeException $e) {
             DB::rollBack();
 
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with("error", $e->getMessage());
         } catch (\InvalidArgumentException $e) {
             DB::rollBack();
 
-            return back()->withInput()->with('error', $e->getMessage());
+            return back()->withInput()->with("error", $e->getMessage());
         }
     }
 }
